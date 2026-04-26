@@ -1,0 +1,38 @@
+# Chat Linux Client Dependencies
+
+# GUI Framework
+PyQt6>=6.5.0
+PyQt6-Qt6>=6.5.0
+
+# Async HTTP Client
+aiohttp>=3.8.0
+
+# Cryptography for key storage
+cryptography>=41.0.0
+
+# Database (SQLite is built-in, but this provides better integration)
+# No additional SQLite package needed for Python 3.8+
+
+# System monitoring (optional, for performance checks)
+psutil>=5.9.0
+
+# Markdown processing (optional, for enhanced formatting)
+markdown>=3.4.0
+
+# JSON schema validation (optional, for configuration validation)
+jsonschema>=4.17.0
+
+# Rich terminal output (optional, for better CLI experience)
+rich>=13.0.0
+
+# Development and testing dependencies
+pytest>=9.0.0
+pytest-qt>=4.5.0
+# pytest-qt>=4.2.0
+# black>=23.0.0
+# flake8>=6.0.0
+# mypy>=1.0.0
+
+# Documentation (uncomment for documentation generation)
+# sphinx>=6.0.0
+# sphinx-rtd-theme>=1.2.0

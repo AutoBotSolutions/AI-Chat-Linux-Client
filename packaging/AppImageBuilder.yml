@@ -1,0 +1,74 @@
+# AppImageBuilder configuration for Chat Linux Client
+version: 1.0
+
+app:
+  name: ChatLinuxClient
+  version: 1.0.0
+  id: com.chatlinux.client
+  
+  # Application information
+  display_name: Chat Linux Client
+  comment: Private multi-provider AI desktop client
+  categories:
+    - Network
+    - Chat
+    - Office
+  
+  # Executable
+  exec: chat-linux-client
+  exec_args: $@
+  
+  # Icon
+  icon: assets/icon.png
+  
+  # Desktop file
+  desktop_file: packaging/chatgpt-client.desktop
+  
+  # Files to include
+  include:
+    - main.py
+    - core/
+    - ui/
+    - storage/
+    - utils/
+    - styles/
+    - assets/
+    - requirements.txt
+    - scripts/
+  
+  # Dependencies
+  dependencies:
+    - python3
+    - python3-pyqt6
+    - python3-aiohttp
+    - python3-cryptography
+  
+  # Python virtual environment
+  python:
+    version: "3.8+"
+    requirements: requirements.txt
+    venv: true
+  
+  # System integration
+  integration:
+    desktop: true
+    icon: true
+    mime_types: []
+  
+  # Build settings
+  build:
+    arch: x86_64
+    output_dir: build
+    clean: true
+    
+  # Runtime settings
+  runtime:
+    env:
+      PYTHONPATH: $APPDIR:$PYTHONPATH
+      QT_QPA_PLATFORMTHEME: gtk3
+    
+  # AppImage settings
+  appimage:
+    update_information: None
+    sign: false
+    gpg_key: None

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Chat Linux Client</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <span>Chat Linux Client</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#features" class="nav-link">Features</a>
+                <a href="index.html#download" class="nav-link">Download</a>
+                <a href="docs.html" class="nav-link active">Docs</a>
+                <a href="https://github.com/yourusername/chat-linux-client" class="nav-link github-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="docs">
+        <div class="container">
+            <div class="docs-header">
+                <h1 class="docs-title">
+                    <span class="gradient-text">Documentation</span>
+                </h1>
+                <p class="docs-description">Complete guide to using and developing Chat Linux Client</p>
+            </div>
+            
+            <div class="docs-layout">
+                <aside class="docs-sidebar">
+                    <nav class="docs-nav">
+                        <div class="docs-nav-section">
+                            <h3 class="docs-nav-title">Getting Started</h3>
+                            <ul class="docs-nav-list">
+                                <li><a href="#installation" class="docs-nav-link active">Installation</a></li>
+                                <li><a href="#configuration" class="docs-nav-link">Configuration</a></li>
+                                <li><a href="#usage" class="docs-nav-link">Usage</a></li>
+                                <li><a href="#providers" class="docs-nav-link">API Providers</a></li>
+                            </ul>
+                        </div>
+                        <div class="docs-nav-section">
+                            <h3 class="docs-nav-title">Development</h3>
+                            <ul class="docs-nav-list">
+                                <li><a href="#development" class="docs-nav-link">Development Setup</a></li>
+                                <li><a href="#testing" class="docs-nav-link">Testing</a></li>
+                                <li><a href="#architecture" class="docs-nav-link">Architecture</a></li>
+                                <li><a href="#contributing" class="docs-nav-link">Contributing</a></li>
+                            </ul>
+                        </div>
+                        <div class="docs-nav-section">
+                            <h3 class="docs-nav-title">Reference</h3>
+                            <ul class="docs-nav-list">
+                                <li><a href="#security" class="docs-nav-link">Security</a></li>
+                                <li><a href="#troubleshooting" class="docs-nav-link">Troubleshooting</a></li>
+                                <li><a href="#faq" class="docs-nav-link">FAQ</a></li>
+                            </ul>
+                        </div>
+                    </nav>
+                </aside>
+                
+                <main class="docs-content">
+                    <article class="docs-section" id="installation">
+                        <h2 class="docs-section-title">Installation</h2>
+                        <p class="docs-intro">Get Chat Linux Client up and running on your Linux system.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>System Requirements</h3>
+                            <ul>
+                                <li>Python 3.8 or higher</li>
+                                <li>Linux (Ubuntu 20.04+, Fedora 35+, Arch Linux)</li>
+                                <li>4GB RAM minimum (8GB recommended)</li>
+                                <li>500MB free storage</li>
+                                <li>Ollama (optional, for local models)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Quick Installation</h3>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>Bash</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>git clone https://github.com/yourusername/chat-linux-client.git
+cd chat-linux-client
+./scripts/install.sh
+./scripts/run.sh</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Manual Installation</h3>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>Bash</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Installing Ollama (Optional)</h3>
+                            <p>For offline AI support with local models:</p>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>Bash</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>curl -fsSL https://ollama.ai/install.sh | sh
+ollama pull llama3.2:1b
+ollama pull mistral:7b</code></pre>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="configuration">
+                        <h2 class="docs-section-title">Configuration</h2>
+                        <p class="docs-intro">Configure API keys, local models, and application settings.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>API Keys</h3>
+                            <p>Add API keys through the application settings or environment variables:</p>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>Environment</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>GROQ_API_KEY=gsk_your_key_here
+HUGGINGFACE_API_KEY=hf_your_key_here
+OPENROUTER_API_KEY=sk-or-your_key_here
+OPENAI_API_KEY=sk-your_key_here</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Configuration File</h3>
+                            <p>Configuration is stored at <code>~/.config/chat-linux-client/config.json</code>:</p>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>JSON</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>{
+  "providers": {
+    "groq": {
+      "enabled": true,
+      "api_key": "your_api_key",
+      "base_url": "https://api.groq.com/openai/v1"
+    },
+    "ollama": {
+      "enabled": true,
+      "base_url": "http://localhost:11434"
+    }
+  },
+  "chat": {
+    "temperature": 0.7,
+    "max_tokens": null,
+    "routing_strategy": "offline_first"
+  }
+}</code></pre>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="usage">
+                        <h2 class="docs-section-title">Usage</h2>
+                        <p class="docs-intro">Learn how to use Chat Linux Client effectively.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>Basic Chat</h3>
+                            <ol>
+                                <li>Launch the application</li>
+                                <li>Select a model from the dropdown</li>
+                                <li>Type your message</li>
+                                <li>Press Enter or click Send</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Model Selection</h3>
+                            <p>Choose models based on your needs:</p>
+                            <ul>
+                                <li><strong>For speed:</strong> Groq or lightweight Ollama models</li>
+                                <li><strong>For quality:</strong> GPT-4 or capable Ollama models</li>
+                                <li><strong>For privacy:</strong> Ollama local models</li>
+                                <li><strong>For cost:</strong> Free tier providers or local models</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Keyboard Shortcuts</h3>
+                            <table class="docs-table">
+                                <thead>
+                                    <tr>
+                                        <th>Shortcut</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>Enter</code></td>
+                                        <td>Send message</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>Ctrl+N</code></td>
+                                        <td>New chat</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>Ctrl+H</code></td>
+                                        <td>Open history</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>Ctrl+,</code></td>
+                                        <td>Open settings</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="providers">
+                        <h2 class="docs-section-title">API Providers</h2>
+                        <p class="docs-intro">Learn about supported AI providers and how to use them.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>Ollama (Local)</h3>
+                            <p>Run AI models locally with complete privacy. No API costs, works offline.</p>
+                            <p><strong>Available Models:</strong> Llama3.2, Qwen2.5, Phi3.5, Mistral, CodeLlama</p>
+                            <div class="provider-tag provider-local">Local • Free • Private</div>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Groq</h3>
+                            <p>Ultra-low latency inference using LPU technology. Generous free tier.</p>
+                            <p><strong>Available Models:</strong> Llama3-8B, Mixtral-8x7B, Gemma-7B</p>
+                            <div class="provider-tag">Cloud • Fast • Free Tier</div>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>HuggingFace</h3>
+                            <p>Access thousands of open-source models. Free tier available.</p>
+                            <p><strong>Available Models:</strong> Qwen2.5, Mistral-7B, DeepSeek-R1, DialoGPT</p>
+                            <div class="provider-tag">Cloud • Open Source • Free Tier</div>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>OpenRouter</h3>
+                            <p>Access multiple models from various providers through one API.</p>
+                            <p><strong>Available Models:</strong> GPT-4, Claude-3, GPT-3.5</p>
+                            <div class="provider-tag">Cloud • Multi-Model • Pay-per-use</div>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>OpenAI</h3>
+                            <p>State-of-the-art GPT models with excellent quality.</p>
+                            <p><strong>Available Models:</strong> GPT-4o, GPT-4-Turbo, GPT-3.5</p>
+                            <div class="provider-tag">Cloud • Premium • Pay-per-use</div>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="development">
+                        <h2 class="docs-section-title">Development Setup</h2>
+                        <p class="docs-intro">Set up your development environment for contributing.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>Prerequisites</h3>
+                            <ul>
+                                <li>Python 3.8 or higher</li>
+                                <li>Git</li>
+                                <li>Virtual environment</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Setup</h3>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>Bash</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>git clone https://github.com/yourusername/chat-linux-client.git
+cd chat-linux-client
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install pytest pytest-qt black flake8 mypy</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Running Tests</h3>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>Bash</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>pytest tests/
+pytest --cov=. tests/
+pytest -v tests/</code></pre>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="testing">
+                        <h2 class="docs-section-title">Testing</h2>
+                        <p class="docs-intro">Comprehensive testing guide for the project.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>Test Structure</h3>
+                            <p>Tests are organized by module in the <code>tests/</code> directory:</p>
+                            <ul>
+                                <li><code>test_api_client.py</code> - API client tests</li>
+                                <li><code>test_provider_router.py</code> - Routing tests</li>
+                                <li><code>test_key_handler.py</code> - Key storage tests</li>
+                                <li><code>test_main_window.py</code> - UI tests</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Writing Tests</h3>
+                            <p>Use pytest with fixtures for clean test code:</p>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>Python</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>import pytest
+from core.groq_client import GroqClient
+
+@pytest.fixture
+def client():
+    return GroqClient(api_key="test_key")
+
+def test_initialization(client):
+    assert client.api_key == "test_key"</code></pre>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="architecture">
+                        <h2 class="docs-section-title">Architecture</h2>
+                        <p class="docs-intro">System architecture and design patterns.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>Layered Architecture</h3>
+                            <ul>
+                                <li><strong>UI Layer:</strong> PyQt6 desktop interface</li>
+                                <li><strong>Routing Layer:</strong> Intelligent model selection</li>
+                                <li><strong>Provider Layer:</strong> AI provider implementations</li>
+                                <li><strong>Storage Layer:</strong> Configuration and history</li>
+                                <li><strong>Utility Layer:</strong> Helper functions</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Key Components</h3>
+                            <ul>
+                                <li><code>core/</code> - AI provider logic</li>
+                                <li><code>ui/</code> - User interface</li>
+                                <li><code>storage/</code> - Data persistence</li>
+                                <li><code>utils/</code> - Utility modules</li>
+                            </ul>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="contributing">
+                        <h2 class="docs-section-title">Contributing</h2>
+                        <p class="docs-intro">How to contribute to Chat Linux Client.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>Contribution Guidelines</h3>
+                            <ol>
+                                <li>Fork the repository</li>
+                                <li>Create a feature branch</li>
+                                <li>Make your changes</li>
+                                <li>Add tests</li>
+                                <li>Ensure all tests pass</li>
+                                <li>Submit a pull request</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Code Style</h3>
+                            <p>We follow standard Python conventions:</p>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>Bash</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>black .
+flake8 .
+mypy .</code></pre>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="security">
+                        <h2 class="docs-section-title">Security</h2>
+                        <p class="docs-intro">Security features and best practices.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>Security Features</h3>
+                            <ul>
+                                <li>No telemetry or analytics</li>
+                                <li>Encrypted API key storage</li>
+                                <li>Optional chat encryption</li>
+                                <li>HTTPS-only communications</li>
+                                <li>Local-first data storage</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Reporting Vulnerabilities</h3>
+                            <p>For security issues, email: security@example.com</p>
+                            <p class="warning">Do NOT open public issues for security vulnerabilities.</p>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="troubleshooting">
+                        <h2 class="docs-section-title">Troubleshooting</h2>
+                        <p class="docs-intro">Common issues and solutions.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>Application Won't Start</h3>
+                            <p>Run system checks:</p>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>Bash</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                                </div>
+                                <pre><code>python main.py --check-system</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>API Key Not Working</h3>
+                            <ul>
+                                <li>Verify the key is correct</li>
+                                <li>Check provider account is active</li>
+                                <li>Ensure key has proper permissions</li>
+                                <li>Try regenerating the key</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Models Not Showing</h3>
+                            <ul>
+                                <li>Verify provider is enabled</li>
+                                <li>Check API key is configured</li>
+                                <li>Ensure Ollama is running (for local models)</li>
+                            </ul>
+                        </div>
+                    </article>
+                    
+                    <article class="docs-section" id="faq">
+                        <h2 class="docs-section-title">FAQ</h2>
+                        <p class="docs-intro">Frequently asked questions.</p>
+                        
+                        <div class="docs-subsection">
+                            <h3>Is Chat Linux Client free?</h3>
+                            <p>Yes! It's open source and free. Local models are completely free. Some cloud providers have free tiers.</p>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Can I use it offline?</h3>
+                            <p>Yes! With Ollama installed, you can use local models entirely offline.</p>
+                        </div>
+                        
+                        <div class="docs-subsection">
+                            <h3>Which provider should I use?</h3>
+                            <ul>
+                                <li><strong>For privacy:</strong> Ollama (local)</li>
+                                <li><strong>For speed:</strong> Groq</li>
+                                <li><strong>For quality:</strong> OpenAI</li>
+                                <li><strong>For cost:</strong> Ollama or free tiers</li>
+                            </ul>
+                        </div>
+                    </article>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </div>
+                        <span>Chat Linux Client</span>
+                    </div>
+                    <p class="footer-description">Privacy-first AI for Linux</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Resources</h4>
+                    <a href="https://github.com/yourusername/chat-linux-client/wiki" class="footer-link">Wiki</a>
+                    <a href="https://github.com/yourusername/chat-linux-client/issues" class="footer-link">Issues</a>
+                    <a href="https://github.com/yourusername/chat-linux-client" class="footer-link">GitHub</a>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">License</h4>
+                    <p class="footer-license">MIT License</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Chat Linux Client. Open source under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        function copyCode(button) {
+            const codeBlock = button.parentElement.nextElementSibling;
+            const code = codeBlock.querySelector('code').textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.background = 'linear-gradient(135deg, #28c840 0%, #00f0ff 100%)';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '';
+                }, 2000);
+            });
+        }
+        
+        // Active nav link highlighting
+        const navLinks = document.querySelectorAll('.docs-nav-link');
+        const sections = document.querySelectorAll('.docs-section');
+        
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

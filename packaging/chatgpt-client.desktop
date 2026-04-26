@@ -1,0 +1,23 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Chat Linux Client
+Comment=Private multi-provider AI desktop client
+GenericName=AI Chat Client
+Exec=/opt/chat-linux-client/scripts/run.sh
+Icon=/opt/chat-linux-client/assets/icon.png
+Terminal=false
+Categories=Network;Chat;Office;
+Keywords=AI;Chat;Assistant;LLM;OpenAI;Ollama;Groq;
+StartupNotify=true
+StartupWMClass=chat-linux-client
+MimeType=
+Actions=NewChat;Settings;
+
+[Desktop Action NewChat]
+Name=New Chat
+Exec=/opt/chat-linux-client/scripts/run.sh --new-chat
+
+[Desktop Action Settings]
+Name=Settings
+Exec=/opt/chat-linux-client/scripts/run.sh --settings
