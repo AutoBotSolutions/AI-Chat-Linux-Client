@@ -53,14 +53,12 @@ class TestSystemCheckWorkerSignals:
         worker = SystemCheckWorker()
         spy = QSignalSpy(worker.report_ready)
 
-        with (
-            patch("ui.main_window.SystemChecker", return_value=fake_checker),
-            patch.object(
-                fake_checker,
-                "check_all_systems",
-                new=AsyncMock(return_value=fake_results),
-            ),
-        ):
+        with patch("ui.main_window.SystemChecker", return_value=fake_checker), \
+             patch.object(
+                 fake_checker,
+                 "check_all_systems",
+                 new=AsyncMock(return_value=fake_results),
+             ):
             with qtbot.waitSignal(worker.report_ready, timeout=5000):
                 worker.start()
 
@@ -99,14 +97,12 @@ class TestSystemCheckWorkerSignals:
 
         worker = SystemCheckWorker()
 
-        with (
-            patch("ui.main_window.SystemChecker", return_value=fake_checker),
-            patch.object(
-                fake_checker,
-                "check_all_systems",
-                new=AsyncMock(return_value=fake_results),
-            ),
-        ):
+        with patch("ui.main_window.SystemChecker", return_value=fake_checker), \
+             patch.object(
+                 fake_checker,
+                 "check_all_systems",
+                 new=AsyncMock(return_value=fake_results),
+             ):
             with qtbot.waitSignal(worker.finished, timeout=5000):
                 worker.start()
 
@@ -162,15 +158,13 @@ class TestEventLoopHygiene:
 
         worker = SystemCheckWorker()
 
-        with (
-            patch("asyncio.new_event_loop", side_effect=tracking_new_event_loop),
-            patch("ui.main_window.SystemChecker", return_value=fake_checker),
-            patch.object(
-                fake_checker,
-                "check_all_systems",
-                new=AsyncMock(return_value=fake_results),
-            ),
-        ):
+        with patch("asyncio.new_event_loop", side_effect=tracking_new_event_loop), \
+             patch("ui.main_window.SystemChecker", return_value=fake_checker), \
+             patch.object(
+                 fake_checker,
+                 "check_all_systems",
+                 new=AsyncMock(return_value=fake_results),
+             ):
             with qtbot.waitSignal(worker.finished, timeout=5000):
                 worker.start()
 
@@ -194,10 +188,8 @@ class TestEventLoopHygiene:
 
         worker = SystemCheckWorker()
 
-        with (
-            patch("asyncio.new_event_loop", side_effect=tracking_new_event_loop),
-            patch("ui.main_window.SystemChecker", side_effect=RuntimeError("forced")),
-        ):
+        with patch("asyncio.new_event_loop", side_effect=tracking_new_event_loop), \
+             patch("ui.main_window.SystemChecker", side_effect=RuntimeError("forced")):
             with qtbot.waitSignal(worker.finished, timeout=5000):
                 worker.start()
 

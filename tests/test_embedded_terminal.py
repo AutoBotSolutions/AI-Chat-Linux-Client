@@ -8,10 +8,8 @@ from ui.main_window import EmbeddedTerminal
 def test_resolve_shell_handles_env_with_args(monkeypatch):
     monkeypatch.setenv("SHELL", "/bin/bash -l")
 
-    with (
-        patch("ui.main_window.os.path.exists", return_value=True),
-        patch("ui.main_window.shutil.which", return_value=None),
-    ):
+    with patch("ui.main_window.os.path.exists", return_value=True), \
+         patch("ui.main_window.shutil.which", return_value=None):
         resolved = EmbeddedTerminal._resolve_shell()
 
     assert resolved == "/bin/bash"

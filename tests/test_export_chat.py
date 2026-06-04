@@ -51,11 +51,9 @@ class TestExportTxt:
             tmp_path = f.name
 
         try:
-            with (
-                patch("ui.main_window.QFileDialog.getSaveFileName",
-                      return_value=(tmp_path, selected_filter)),
-                patch("ui.main_window.QMessageBox.information"),
-            ):
+            with patch("ui.main_window.QFileDialog.getSaveFileName",
+                      return_value=(tmp_path, selected_filter)), \
+                 patch("ui.main_window.QMessageBox.information"):
                 chat_window.export_chat()
             return open(tmp_path, encoding="utf-8").read()
         finally:
@@ -87,11 +85,9 @@ class TestExportMarkdown:
             tmp_path = f.name
 
         try:
-            with (
-                patch("ui.main_window.QFileDialog.getSaveFileName",
-                      return_value=(tmp_path, "Markdown Files (*.md)")),
-                patch("ui.main_window.QMessageBox.information"),
-            ):
+            with patch("ui.main_window.QFileDialog.getSaveFileName",
+                      return_value=(tmp_path, "Markdown Files (*.md)")), \
+                 patch("ui.main_window.QMessageBox.information"):
                 chat_window.export_chat()
             return open(tmp_path, encoding="utf-8").read()
         finally:
@@ -123,11 +119,9 @@ class TestExportJson:
             tmp_path = f.name
 
         try:
-            with (
-                patch("ui.main_window.QFileDialog.getSaveFileName",
-                      return_value=(tmp_path, "JSON Files (*.json)")),
-                patch("ui.main_window.QMessageBox.information"),
-            ):
+            with patch("ui.main_window.QFileDialog.getSaveFileName",
+                      return_value=(tmp_path, "JSON Files (*.json)")), \
+                 patch("ui.main_window.QMessageBox.information"):
                 chat_window.export_chat()
             with open(tmp_path, encoding="utf-8") as f:
                 return json.load(f)
@@ -165,11 +159,9 @@ class TestAutoExtension:
         # tmp dir for output files
         with tempfile.TemporaryDirectory() as tmp_dir:
             target = os.path.join(tmp_dir, bare_path)
-            with (
-                patch("ui.main_window.QFileDialog.getSaveFileName",
-                      return_value=(target, selected_filter)),
-                patch("ui.main_window.QMessageBox.information"),
-            ):
+            with patch("ui.main_window.QFileDialog.getSaveFileName",
+                      return_value=(target, selected_filter)), \
+                 patch("ui.main_window.QMessageBox.information"):
                 chat_window.export_chat()
 
             # After auto-extension the file should exist with a suffix.
