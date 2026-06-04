@@ -2,8 +2,6 @@
 
 A privacy-first, multi-provider AI desktop client for Linux systems that unifies multiple AI providers and local models into a single conversational interface.
 
-![Chat Linux Client](https://autobotsolutions.github.io/AI-Chat-Linux-Client/assets/images/chat-client-screenshot.png)
-
 ## Features
 
 ### Core Functionality
