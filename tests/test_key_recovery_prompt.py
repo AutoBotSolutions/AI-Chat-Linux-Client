@@ -8,10 +8,8 @@ def test_prompt_opens_settings_when_user_accepts(chat_window):
     chat_window._key_recovery_prompt_shown = False
     chat_window.key_handler.get_key_store_status = lambda: "invalid-token"
 
-    with (
-        patch("ui.main_window.QMessageBox.question", return_value=QMessageBox.StandardButton.Yes),
-        patch.object(chat_window, "show_provider_settings") as mock_show,
-    ):
+    with patch("ui.main_window.QMessageBox.question", return_value=QMessageBox.StandardButton.Yes), \
+         patch.object(chat_window, "show_provider_settings") as mock_show:
         chat_window._prompt_key_store_recovery_if_needed()
 
     mock_show.assert_called_once_with("Providers")
