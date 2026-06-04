@@ -78,19 +78,17 @@ def chat_window(qtbot):
     mock_settings = _make_mock_settings()
     mock_router = _make_mock_router()
 
-    with (
-        patch("ui.main_window.SettingsManager", return_value=mock_settings),
-        patch("ui.main_window.ProviderRouter", return_value=mock_router),
-        patch("ui.main_window.ModelManager", return_value=MagicMock()),
-        patch("ui.main_window.HistoryManager", return_value=MagicMock()),
-        patch("ui.main_window.KeyHandler", side_effect=RuntimeError("test: no keychain")),
-        patch.object(
-            # Prevent the real async provider init from running
-            __import__("ui.main_window", fromlist=["ChatWindow"]).ChatWindow,
-            "init_providers_sync",
-            lambda self: None,
-        ),
-    ):
+    with patch("ui.main_window.SettingsManager", return_value=mock_settings), \
+         patch("ui.main_window.ProviderRouter", return_value=mock_router), \
+         patch("ui.main_window.ModelManager", return_value=MagicMock()), \
+         patch("ui.main_window.HistoryManager", return_value=MagicMock()), \
+         patch("ui.main_window.KeyHandler", side_effect=RuntimeError("test: no keychain")), \
+         patch.object(
+             # Prevent the real async provider init from running
+             __import__("ui.main_window", fromlist=["ChatWindow"]).ChatWindow,
+             "init_providers_sync",
+             lambda self: None,
+         ):
         from ui.main_window import ChatWindow
         window = ChatWindow()
         qtbot.addWidget(window)
