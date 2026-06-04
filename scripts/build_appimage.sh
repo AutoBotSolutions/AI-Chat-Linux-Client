@@ -35,7 +35,14 @@ mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
 
 # Copy application files
 echo "Copying application files..."
-cp -r "$PROJECT_DIR" "$APPDIR/usr/bin/chat-linux-client"
+mkdir -p "$APPDIR/usr/bin/chat-linux-client"
+cp -r "$PROJECT_DIR"/ui "$APPDIR/usr/bin/chat-linux-client/"
+cp -r "$PROJECT_DIR"/core "$APPDIR/usr/bin/chat-linux-client/"
+cp -r "$PROJECT_DIR"/storage "$APPDIR/usr/bin/chat-linux-client/"
+cp -r "$PROJECT_DIR"/utils "$APPDIR/usr/bin/chat-linux-client/"
+cp -r "$PROJECT_DIR"/site "$APPDIR/usr/bin/chat-linux-client/"
+cp "$PROJECT_DIR"/main.py "$APPDIR/usr/bin/chat-linux-client/"
+cp "$PROJECT_DIR"/requirements.txt "$APPDIR/usr/bin/chat-linux-client/"
 
 # Create virtual environment in AppDir
 echo "Creating virtual environment..."
@@ -47,7 +54,7 @@ pip install -r requirements.txt
 
 # Create launcher script
 echo "Creating launcher script..."
-cat > "$APPDIR/usr/bin/chat-linux-client" << 'EOF'
+cat > "$APPDIR/usr/bin/chat-linux-client/launcher.sh" << 'EOF'
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "${0}")")"
 export PATH="${HERE}/venv/bin:${PATH}"
@@ -56,7 +63,7 @@ cd "${HERE}"
 exec python3 main.py "$@"
 EOF
 
-chmod +x "$APPDIR/usr/bin/chat-linux-client"
+chmod +x "$APPDIR/usr/bin/chat-linux-client/launcher.sh"
 
 # Create desktop file
 echo "Creating desktop file..."
@@ -66,7 +73,7 @@ Version=1.0
 Type=Application
 Name=Chat Linux Client
 Comment=Private multi-provider AI desktop client
-Exec=chat-linux-client
+Exec=launcher.sh
 Icon=chat-linux-client
 Terminal=false
 Categories=Network;Chat;
@@ -96,7 +103,7 @@ cat > "$APPDIR/AppRun" << 'EOF'
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "${0}")")"
 export PATH="${HERE}/usr/bin:${PATH}"
-exec "${HERE}/usr/bin/chat-linux-client" "$@"
+exec "${HERE}/usr/bin/chat-linux-client/launcher.sh" "$@"
 EOF
 chmod +x "$APPDIR/AppRun"
 
