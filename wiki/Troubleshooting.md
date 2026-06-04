@@ -1,377 +1,332 @@
-# Troubleshooting
+[Troubleshooting](Troubleshooting)
 
 This guide covers common issues and their solutions for Chat Linux Client.
 
-## Table of Contents
+Table of Contents
+Installation Issues
+Configuration Issues
+API Provider Issues
+Performance Issues
+UI Issues
+Data Issues
+Getting Help
 
-- [Installation Issues](#installation-issues)
-- [Configuration Issues](#configuration-issues)
-- [API Provider Issues](#api-provider-issues)
-- [Performance Issues](#performance-issues)
-- [UI Issues](#ui-issues)
-- [Data Issues](#data-issues)
-- [Getting Help](#getting-help)
+Installation Issues
 
-## Installation Issues
+Python Version Error
 
-### Python Version Error
+Error: Python 3.8 or higher required
 
-**Error**: `Python 3.8 or higher required`
+Solution: Install a newer Python version:
 
-**Solution**: Install a newer Python version:
-```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install python3.9 python3.9-venv
+Dependency Installation Fails
 
-# Fedora
-sudo dnf install python39
+Error: pip install fails with various errors
 
-# Arch Linux
-sudo pacman -S python
-```
+Solution: Update pip and try again:
 
-### Dependency Installation Fails
+PyQt6 Installation Fails
 
-**Error**: `pip install` fails with various errors
+Error: PyQt6 installation fails
 
-**Solution**: Update pip and try again:
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
+Solution: Install system dependencies:
 
-### PyQt6 Installation Fails
+Permission Errors
 
-**Error**: PyQt6 installation fails
+Error: Permission denied when running scripts
 
-**Solution**: Install system dependencies:
-```bash
-# Ubuntu/Debian
-sudo apt install libxcb-xinerama0
+Solution: Make scripts executable:
 
-# Fedora
-sudo dnf install libxcb
+Configuration Issues
 
-# Arch Linux
-sudo pacman -S libxcb
-```
+API Key Not Working
 
-### Permission Errors
+Symptoms: API key accepted but provider not working
 
-**Error**: `Permission denied` when running scripts
+Solutions:
+Verify the key is correct (no extra spaces)
+Check the key has proper permissions in the provider dashboard
+Ensure the provider account is active
+Check network connectivity
+Try regenerating the API key
 
-**Solution**: Make scripts executable:
-```bash
-chmod +x scripts/*.sh
-```
+Models Not Showing in Dropdown
 
-## Configuration Issues
+Symptoms: Model dropdown is empty or missing models
 
-### API Key Not Working
+Solutions:
+Verify the provider is enabled in settings
+Check API key is configured (for cloud providers)
+Ensure Ollama is running (for local models)
+Run system checks: python main.py --check-system
+Check application logs for errors
 
-**Symptoms**: API key accepted but provider not working
+Configuration Not Saving
 
-**Solutions**:
-1. Verify the key is correct (no extra spaces)
-2. Check the key has proper permissions in the provider dashboard
-3. Ensure the provider account is active
-4. Check network connectivity
-5. Try regenerating the API key
+Symptoms: Settings don't persist after restart
 
-### Models Not Showing in Dropdown
+Solutions:
+Check write permissions for ~/.config/chat-linux-client/
+Ensure the directory exists: mkdir -p ~/.config/chat-linux-client
+Check disk space
+Verify no other process is locking the config file
 
-**Symptoms**: Model dropdown is empty or missing models
+Encryption Password Issues
 
-**Solutions**:
-1. Verify the provider is enabled in settings
-2. Check API key is configured (for cloud providers)
-3. Ensure Ollama is running (for local models)
-4. Run system checks: `python main.py --check-system`
-5. Check application logs for errors
+Symptoms: Cannot access encrypted chats or keys
 
-### Configuration Not Saving
+Solutions:
+Ensure you're using the correct password
+If password was changed, use the old password to decrypt
+If password is lost, encrypted data cannot be recovered
+Consider starting fresh (delete encrypted files)
 
-**Symptoms**: Settings don't persist after restart
+API Provider Issues
 
-**Solutions**:
-1. Check write permissions for `~/.config/chat-linux-client/`
-2. Ensure the directory exists: `mkdir -p ~/.config/chat-linux-client`
-3. Check disk space
-4. Verify no other process is locking the config file
+OpenAI: 401 Unauthorized
 
-### Encryption Password Issues
+Error: 401 Unauthorized when using OpenAI
 
-**Symptoms**: Cannot access encrypted chats or keys
+Solutions:
+Verify API key is correct
+Check account has credits
+Ensure API key has proper permissions
+Try regenerating the API key
 
-**Solutions**:
-1. Ensure you're using the correct password
-2. If password was changed, use the old password to decrypt
-3. If password is lost, encrypted data cannot be recovered
-4. Consider starting fresh (delete encrypted files)
+Groq: Rate Limit Exceeded
 
-## API Provider Issues
+Error: Rate limit exceeded when using Groq
 
-### OpenAI: 401 Unauthorized
+Solutions:
+Wait a few minutes before trying again
+Upgrade to paid tier if needed
+Use local models as fallback
+Implement retry logic in your usage
 
-**Error**: `401 Unauthorized` when using OpenAI
+HuggingFace: Model Not Found
 
-**Solutions**:
-1. Verify API key is correct
-2. Check account has credits
-3. Ensure API key has proper permissions
-4. Try regenerating the API key
+Error: Model not found or Model loading error
 
-### Groq: Rate Limit Exceeded
+Solutions:
+Verify model name is correct
+Check if model is available on HuggingFace
+Some models require approval
+Try a different model
 
-**Error**: `Rate limit exceeded` when using Groq
+OpenRouter: Insufficient Credits
 
-**Solutions**:
-1. Wait a few minutes before trying again
-2. Upgrade to paid tier if needed
-3. Use local models as fallback
-4. Implement retry logic in your usage
+Error: Insufficient credits when using OpenRouter
 
-### HuggingFace: Model Not Found
+Solutions:
+Add credits to your OpenRouter account
+Check credit balance in dashboard
+Use cheaper models
+Switch to free providers
 
-**Error**: `Model not found` or `Model loading error`
+Ollama: Connection Refused
 
-**Solutions**:
-1. Verify model name is correct
-2. Check if model is available on HuggingFace
-3. Some models require approval
-4. Try a different model
+Error: Connection refused when using Ollama
 
-### OpenRouter: Insufficient Credits
+Solutions:
+Ensure Ollama is running: ollama serve
+Check Ollama is installed correctly
+Verify default URL: http://localhost:11434
+Restart Ollama service
 
-**Error**: `Insufficient credits` when using OpenRouter
+Performance Issues
 
-**Solutions**:
-1. Add credits to your OpenRouter account
-2. Check credit balance in dashboard
-3. Use cheaper models
-4. Switch to free providers
+Slow Response Times
 
-### Ollama: Connection Refused
+Symptoms: AI responses take a long time
 
-**Error**: `Connection refused` when using Ollama
+Solutions:
+Use a faster model (lighter local model or Groq)
+Reduce max tokens in settings
+Check network connection for cloud models
+Close other applications to free resources
+Use offline-first routing
 
-**Solutions**:
-1. Ensure Ollama is running: `ollama serve`
-2. Check Ollama is installed correctly
-3. Verify default URL: `http://localhost:11434`
-4. Restart Ollama service
+High Memory Usage
 
-## Performance Issues
+Symptoms: Application uses too much RAM
 
-### Slow Response Times
+Solutions:
+Use lighter models (e.g., llama3.2:1b)
+Clear chat history regularly
+Close unused chat sessions
+Reduce max tokens setting
+Restart application periodically
 
-**Symptoms**: AI responses take a long time
+Application Freezes
 
-**Solutions**:
-1. Use a faster model (lighter local model or Groq)
-2. Reduce max tokens in settings
-3. Check network connection for cloud models
-4. Close other applications to free resources
-5. Use offline-first routing
+Symptoms: Application becomes unresponsive
 
-### High Memory Usage
+Solutions:
+Wait a moment (may be processing large response)
+Check if network is responsive (for cloud models)
+Kill and restart the application
+Check system logs for errors
+Ensure sufficient system resources
 
-**Symptoms**: Application uses too much RAM
+Streaming Issues
 
-**Solutions**:
-1. Use lighter models (e.g., llama3.2:1b)
-2. Clear chat history regularly
-3. Close unused chat sessions
-4. Reduce max tokens setting
-5. Restart application periodically
+Symptoms: Streaming responses don't appear smoothly
 
-### Application Freezes
+Solutions:
+Check network stability
+Try non-streaming mode in settings
+Use a different provider
+Check if provider supports streaming
 
-**Symptoms**: Application becomes unresponsive
+UI Issues
 
-**Solutions**:
-1. Wait a moment (may be processing large response)
-2. Check if network is responsive (for cloud models)
-3. Kill and restart the application
-4. Check system logs for errors
-5. Ensure sufficient system resources
+Window Not Appearing
 
-### Streaming Issues
+Symptoms: Application starts but no window appears
 
-**Symptoms**: Streaming responses don't appear smoothly
+Solutions:
+Check if window is on another desktop
+Check system logs for errors
+Verify PyQt6 is installed correctly
+Try running from terminal to see errors
+Check display environment variables
 
-**Solutions**:
-1. Check network stability
-2. Try non-streaming mode in settings
-3. Use a different provider
-4. Check if provider supports streaming
+UI Elements Not Responsive
 
-## UI Issues
+Symptoms: Buttons or inputs don't respond
 
-### Window Not Appearing
+Solutions:
+Restart the application
+Check if application is frozen
+Look for error messages in terminal
+Verify all dependencies are installed
+Try running system checks
 
-**Symptoms**: Application starts but no window appears
+Dark Theme Not Working
 
-**Solutions**:
-1. Check if window is on another desktop
-2. Check system logs for errors
-3. Verify PyQt6 is installed correctly
-4. Try running from terminal to see errors
-5. Check display environment variables
+Symptoms: UI doesn't use dark theme
 
-### UI Elements Not Responsive
+Solutions:
+Ensure dark theme is enabled in settings
+Check if stylesheet file exists: styles/dark.qss
+Verify PyQt6 Qt6 is installed
+Try reinstalling dependencies
 
-**Symptoms**: Buttons or inputs don't respond
+Markdown Rendering Issues
 
-**Solutions**:
-1. Restart the application
-2. Check if application is frozen
-3. Look for error messages in terminal
-4. Verify all dependencies are installed
-5. Try running system checks
+Symptoms: Markdown not rendering correctly
 
-### Dark Theme Not Working
+Solutions:
+Check markdown library is installed
+Verify markdown renderer is working
+Try simpler markdown to test
+Check for markdown syntax errors
 
-**Symptoms**: UI doesn't use dark theme
+Data Issues
 
-**Solutions**:
-1. Ensure dark theme is enabled in settings
-2. Check if stylesheet file exists: `styles/dark.qss`
-3. Verify PyQt6 Qt6 is installed
-4. Try reinstalling dependencies
+Chat History Not Saving
 
-### Markdown Rendering Issues
+Symptoms: Chats not saved after closing
 
-**Symptoms**: Markdown not rendering correctly
+Solutions:
+Check write permissions for data directory
+Ensure ~/.local/share/chat-linux-client/ exists
+Check disk space
+Verify database is not corrupted
+Check application logs for errors
 
-**Solutions**:
-1. Check markdown library is installed
-2. Verify markdown renderer is working
-3. Try simpler markdown to test
-4. Check for markdown syntax errors
+Cannot Export Chats
 
-## Data Issues
+Symptoms: Export function fails
 
-### Chat History Not Saving
+Solutions:
+Check write permissions for export location
+Ensure sufficient disk space
+Try different export format
+Check if chat has content to export
+Verify export directory exists
 
-**Symptoms**: Chats not saved after closing
+Database Corruption
 
-**Solutions**:
-1. Check write permissions for data directory
-2. Ensure `~/.local/share/chat-linux-client/` exists
-3. Check disk space
-4. Verify database is not corrupted
-5. Check application logs for errors
+Symptoms: Application crashes on startup, database errors
 
-### Cannot Export Chats
+Solutions:
+Backup existing database if possible
+Delete corrupted database: rm ~/.local/share/chat-linux-client/chat_history.db
+Restart application (will create new database)
+Import backup if available
 
-**Symptoms**: Export function fails
+API Key Storage Issues
 
-**Solutions**:
-1. Check write permissions for export location
-2. Ensure sufficient disk space
-3. Try different export format
-4. Check if chat has content to export
-5. Verify export directory exists
+Symptoms: Cannot save or load API keys
 
-### Database Corruption
+Solutions:
+Check encryption password is correct
+Verify key file permissions
+Try resetting encryption
+Delete key storage and reconfigure
+Check application logs for specific errors
 
-**Symptoms**: Application crashes on startup, database errors
+Getting Help
 
-**Solutions**:
-1. Backup existing database if possible
-2. Delete corrupted database: `rm ~/.local/share/chat-linux-client/chat_history.db`
-3. Restart application (will create new database)
-4. Import backup if available
-
-### API Key Storage Issues
-
-**Symptoms**: Cannot save or load API keys
-
-**Solutions**:
-1. Check encryption password is correct
-2. Verify key file permissions
-3. Try resetting encryption
-4. Delete key storage and reconfigure
-5. Check application logs for specific errors
-
-## Getting Help
-
-### Run System Checks
-
-```bash
-python main.py --check-system
-```
+Run System Checks
 
 This will verify:
-- Python version compatibility
-- Required dependencies
-- Ollama availability
-- System resources
-- Configuration integrity
+Python version compatibility
+Required dependencies
+Ollama availability
+System resources
+Configuration integrity
 
-### Check Logs
+Check Logs
 
 Application logs are stored at:
-```
-~/.local/share/chat-linux-client/logs/
-```
 
-### Enable Debug Mode
+Enable Debug Mode
 
 Set environment variable:
-```bash
-DEBUG=true
-python main.py
-```
 
-### Collect Diagnostic Information
+Collect Diagnostic Information
+Run system checks
+Check application logs
+Note error messages
+Document steps to reproduce
+Include system information
 
-1. Run system checks
-2. Check application logs
-3. Note error messages
-4. Document steps to reproduce
-5. Include system information
-
-### Report Issues
+Report Issues
 
 When reporting issues, include:
-- OS and version
-- Python version
-- Application version
-- Error messages
-- Steps to reproduce
-- System check output
-- Relevant log excerpts
+OS and version
+Python version
+Application version
+Error messages
+Steps to reproduce
+System check output
+Relevant log excerpts
 
-## Common Error Messages
+Common Error Messages
 
-### "No module named 'PyQt6'"
+"No module named 'PyQt6'"
 
-**Solution**: Install PyQt6:
-```bash
-pip install PyQt6 PyQt6-Qt6
-```
+Solution: Install PyQt6:
 
-### "API key not found"
+"API key not found"
 
-**Solution**: Configure API key in settings or environment variables
+Solution: Configure API key in settings or environment variables
 
-### "Connection timeout"
+"Connection timeout"
 
-**Solution**: Check network connection and provider status
+Solution: Check network connection and provider status
 
-### "Model not available"
+"Model not available"
 
-**Solution**: Verify model is installed or provider is configured
+Solution: Verify model is installed or provider is configured
 
-### "Encryption key invalid"
+"Encryption key invalid"
 
-**Solution**: Use correct encryption password or reset encryption
+Solution: Use correct encryption password or reset encryption
 
-## Next Steps
-
-- [Read Configuration guide](Configuration)
-- [Read API Providers guide](API-Providers)
-- [Read Development guide](Development)
+Next Steps
+Read Configuration guide
+Read API Providers guide
+Read Development guide

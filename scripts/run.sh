@@ -40,4 +40,4 @@ fi
 
 # Run the application
 echo "Starting Chat Linux Client..."
-python main.py "$@"
+python3 main.py "$@"

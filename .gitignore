@@ -56,10 +56,15 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+
+# Application logs (keep development logs)
+*.log
+!chat_client.log
+!ollama_server.log
+!debug_*.log
 
 # Flask stuff:
 instance/
@@ -101,14 +106,16 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
+# Environments (allow main development venv)
 .env
 .venv
 env/
-venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Note: venv/ is NOT ignored to allow development environment tracking
+# Users can add other venv directories to their local .git/info/exclude if needed
 
 # Spyder project settings
 .spyderproject
@@ -117,8 +124,8 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
+# mkdocs documentation (allow our site directory)
+# /site  # Commented out to allow site/ directory for development
 
 # mypy
 .mypy_cache/
@@ -133,9 +140,20 @@ dmypy.json
 *.db
 *.enc
 .key
+
+# User data and config (allow development directories)
 logs/
+!chat_client.log
+!ollama_server.log
+!debug_*.log
+
+# Protect sensitive data but allow development
 data/
+!data/.gitkeep
 config/
+!config/.gitkeep
+
+# System files
 .DS_Store
 Thumbs.db
 

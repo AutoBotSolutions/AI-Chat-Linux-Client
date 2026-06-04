@@ -14,10 +14,11 @@ from PyQt6.QtWidgets import (
     QTextEdit, QLineEdit, QPushButton, QLabel, QComboBox,
     QSplitter, QFrame, QScrollArea, QMenuBar, QStatusBar,
     QMessageBox, QProgressBar, QTabWidget, QFileDialog,
-    QPlainTextEdit, QListWidget, QListWidgetItem, QApplication
+    QPlainTextEdit, QListWidget, QListWidgetItem, QApplication,
+    QToolBar, QCheckBox, QSpinBox
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QProcess
-from PyQt6.QtGui import QFont, QIcon, QAction, QActionGroup
+from PyQt6.QtGui import QFont, QIcon, QAction, QActionGroup, QColor, QKeySequence, QTextDocument
 
 from core.provider_router import ProviderRouter, RoutingStrategy
 from core.model_manager import ModelManager
@@ -120,8 +121,8 @@ class ChatWorker(QThread):
         finally:
             try:
                 loop.run_until_complete(loop.shutdown_asyncgens())
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.debug(f"Failed to shutdown async generators in chat worker: {e}")
             loop.close()
     
     def stop(self):
@@ -149,8 +150,9 @@ class SystemCheckWorker(QThread):
         finally:
             try:
                 loop.run_until_complete(loop.shutdown_asyncgens())
-            except Exception:
-                pass
+            except Exception as e:
+                # System check worker doesn't have logger, so we use print for debug
+                print(f"Debug: Failed to shutdown async generators in system check worker: {e}")
             loop.close()
 
     @staticmethod
@@ -228,8 +230,9 @@ class WarmupWorker(QThread):
         finally:
             try:
                 loop.run_until_complete(loop.shutdown_asyncgens())
-            except Exception:
-                pass
+            except Exception as e:
+                # Warmup worker doesn't have logger, so we use print for debug
+                print(f"Debug: Failed to shutdown async generators in warmup worker: {e}")
             loop.close()
 
 
@@ -449,6 +452,7 @@ class ChatWindow(QMainWindow):
         self._display_messages = []
         self._models_by_provider = {}
         self._model_health = {}
+        self._model_performance = {}
         self.provider_filter_mode = "all"
         self.prefer_fast_local_models = True
         self._streaming_in_progress = False
@@ -459,6 +463,10 @@ class ChatWindow(QMainWindow):
         self._code_snippets: List[Dict[str, str]] = []
         self._terminal_counter = 0
         self._terminal_working_directory = os.getcwd()
+        
+        # Initialize performance tracking
+        self._generation_start_time = None
+        self._generation_tokens = 0
 
         # Persist model reliability ordering across app restarts.
         self._model_health_file = self.settings.config_dir / "model_health.json"
@@ -573,6 +581,54 @@ class ChatWindow(QMainWindow):
         # Chat display area
         chat_tab = QWidget()
         chat_tab_layout = QVBoxLayout(chat_tab)
+
+        # Create search toolbar
+        self.search_toolbar = QToolBar()
+        self.search_toolbar.setMovable(False)
+        self.search_toolbar.setVisible(False)  # Hidden by default
+        
+        # Search input
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Search chat...")
+        self.search_input.setMaximumWidth(300)
+        self.search_input.returnPressed.connect(self.search_next)
+        self.search_toolbar.addWidget(self.search_input)
+        
+        # Search controls
+        self.search_case_sensitive = QCheckBox("Case")
+        self.search_case_sensitive.setToolTip("Case sensitive search")
+        self.search_toolbar.addWidget(self.search_case_sensitive)
+        
+        self.search_whole_words = QCheckBox("Whole")
+        self.search_whole_words.setToolTip("Whole words only")
+        self.search_toolbar.addWidget(self.search_whole_words)
+        
+        # Navigation buttons
+        self.search_prev_btn = QPushButton("▲")
+        self.search_prev_btn.setToolTip("Previous result (Shift+F3)")
+        self.search_prev_btn.clicked.connect(self.search_previous)
+        self.search_prev_btn.setMaximumWidth(30)
+        self.search_toolbar.addWidget(self.search_prev_btn)
+        
+        self.search_next_btn = QPushButton("▼")
+        self.search_next_btn.setToolTip("Next result (F3)")
+        self.search_next_btn.clicked.connect(self.search_next)
+        self.search_next_btn.setMaximumWidth(30)
+        self.search_toolbar.addWidget(self.search_next_btn)
+        
+        # Results label
+        self.search_results_label = QLabel("")
+        self.search_results_label.setStyleSheet("color: #666; font-size: 11px;")
+        self.search_toolbar.addWidget(self.search_results_label)
+        
+        # Close button
+        close_search_btn = QPushButton("✕")
+        close_search_btn.setToolTip("Close search (Escape)")
+        close_search_btn.clicked.connect(self.close_search)
+        close_search_btn.setMaximumWidth(25)
+        self.search_toolbar.addWidget(close_search_btn)
+        
+        chat_tab_layout.addWidget(self.search_toolbar)
 
         self.chat_display = QTextEdit()
         self.chat_display.setReadOnly(True)
@@ -719,12 +775,14 @@ class ChatWindow(QMainWindow):
         file_menu = menubar.addMenu("File")
         
         export_action = QAction("Export Chat", self)
+        export_action.setShortcut(QKeySequence.StandardKey.SaveAs)  # Ctrl+Shift+S
         export_action.triggered.connect(self.export_chat)
         file_menu.addAction(export_action)
         
         file_menu.addSeparator()
         
         exit_action = QAction("Exit", self)
+        exit_action.setShortcut(QKeySequence.StandardKey.Quit)  # Ctrl+Q
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
         
@@ -732,8 +790,21 @@ class ChatWindow(QMainWindow):
         edit_menu = menubar.addMenu("Edit")
         
         clear_action = QAction("Clear Chat", self)
+        clear_action.setShortcut(QKeySequence("Ctrl+L"))  # Ctrl+L for Clear
         clear_action.triggered.connect(self.clear_chat)
         edit_menu.addAction(clear_action)
+        
+        # Add copy functionality
+        copy_action = QAction("Copy Chat", self)
+        copy_action.setShortcut(QKeySequence.StandardKey.Copy)  # Ctrl+C
+        copy_action.triggered.connect(self.copy_chat)
+        edit_menu.addAction(copy_action)
+        
+        # Add search functionality
+        search_action = QAction("Search Chat", self)
+        search_action.setShortcut(QKeySequence.StandardKey.Find)  # Ctrl+F
+        search_action.triggered.connect(self.toggle_search)
+        edit_menu.addAction(search_action)
         
         # View menu
         view_menu = menubar.addMenu("View")
@@ -741,12 +812,14 @@ class ChatWindow(QMainWindow):
         self.timestamp_action = QAction("Show Timestamps", self)
         self.timestamp_action.setCheckable(True)
         self.timestamp_action.setChecked(self.settings.ui.show_timestamps)
+        self.timestamp_action.setShortcut(QKeySequence("Ctrl+T"))  # Ctrl+T for Timestamps
         self.timestamp_action.triggered.connect(self.toggle_timestamps)
         view_menu.addAction(self.timestamp_action)
         
         self.model_info_action = QAction("Show Model Info", self)
         self.model_info_action.setCheckable(True)
         self.model_info_action.setChecked(self.settings.ui.show_model_info)
+        self.model_info_action.setShortcut(QKeySequence("Ctrl+M"))  # Ctrl+M for Model Info
         self.model_info_action.triggered.connect(self.toggle_model_info)
         view_menu.addAction(self.model_info_action)
 
@@ -786,20 +859,24 @@ class ChatWindow(QMainWindow):
         settings_menu = menubar.addMenu("Settings")
         
         providers_action = QAction("Configure Providers", self)
+        providers_action.setShortcut(QKeySequence("Ctrl+P"))  # Ctrl+P for Providers
         providers_action.triggered.connect(lambda: self.show_provider_settings("Providers"))
         settings_menu.addAction(providers_action)
         
         api_keys_action = QAction("Manage API Keys", self)
+        api_keys_action.setShortcut(QKeySequence("Ctrl+K"))  # Ctrl+K for Keys
         api_keys_action.triggered.connect(lambda: self.show_provider_settings("Providers"))
         settings_menu.addAction(api_keys_action)
         
         settings_menu.addSeparator()
         
         ui_settings_action = QAction("UI Settings", self)
+        ui_settings_action.setShortcut(QKeySequence("Ctrl+U"))  # Ctrl+U for UI Settings
         ui_settings_action.triggered.connect(lambda: self.show_provider_settings("UI"))
         settings_menu.addAction(ui_settings_action)
         
         chat_settings_action = QAction("Chat Settings", self)
+        chat_settings_action.setShortcut(QKeySequence("Ctrl+,"))  # Ctrl+, for Settings
         chat_settings_action.triggered.connect(lambda: self.show_provider_settings("Chat"))
         settings_menu.addAction(chat_settings_action)
         
@@ -807,8 +884,13 @@ class ChatWindow(QMainWindow):
         help_menu = menubar.addMenu("Help")
         
         system_check_action = QAction("System Check", self)
+        system_check_action.setShortcut(QKeySequence("F12"))  # F12 for System Check
         system_check_action.triggered.connect(self.run_system_check)
         help_menu.addAction(system_check_action)
+        
+        health_dashboard_action = QAction("Provider Health Dashboard", self)
+        health_dashboard_action.triggered.connect(self.show_health_dashboard)
+        help_menu.addAction(health_dashboard_action)
         
         help_menu.addSeparator()
         
@@ -825,6 +907,20 @@ class ChatWindow(QMainWindow):
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         self.status_bar.showMessage("Ready")
+        
+        # Add provider health indicator to status bar
+        self.health_label = QLabel("🔍 Checking...")
+        self.health_label.setStyleSheet("color: #666; font-size: 11px; padding: 2px 8px;")
+        self.health_label.setToolTip("Provider health status - hover for details")
+        self.status_bar.addPermanentWidget(self.health_label)
+        
+        # Setup health monitoring timer
+        self.health_timer = QTimer()
+        self.health_timer.timeout.connect(self.update_provider_health_status)
+        self.health_timer.start(30000)  # Update every 30 seconds
+        
+        # Initial health update
+        self.update_provider_health_status()
     
     def load_settings(self):
         """Load application settings."""
@@ -847,6 +943,17 @@ class ChatWindow(QMainWindow):
     
     def init_providers_sync(self):
         """Synchronous wrapper for async provider initialization."""
+        # Check if we're already in an event loop
+        try:
+            loop = asyncio.get_running_loop()
+            # If we're in an async context, we can't use run_until_complete
+            # Just skip initialization for now - it will be initialized later
+            self.logger.debug("Skipping provider initialization in async context")
+            return
+        except RuntimeError:
+            # No running loop, we can create our own
+            pass
+        
         # Use a fresh loop for each sync initialization to avoid reusing
         # closed/running loops across settings updates.
         loop = asyncio.new_event_loop()
@@ -858,8 +965,8 @@ class ChatWindow(QMainWindow):
         finally:
             try:
                 loop.run_until_complete(loop.shutdown_asyncgens())
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.debug(f"Failed to shutdown async generators during provider initialization: {e}")
             loop.close()
     
     async def update_model_list(self):
@@ -1178,6 +1285,10 @@ class ChatWindow(QMainWindow):
         self._current_generation_model = model
         from datetime import datetime
         self._current_stream_timestamp = datetime.now().strftime("%H:%M:%S")
+        
+        # Start performance tracking
+        self._generation_start_time = datetime.now()
+        self._generation_tokens = 0
 
         # For streaming mode, insert a stable prefix once and append chunks after it.
         if self._streaming_in_progress:
@@ -1406,6 +1517,34 @@ class ChatWindow(QMainWindow):
     
     def on_generation_complete(self):
         """Called when generation is complete."""
+        # Calculate and store performance metrics
+        if hasattr(self, '_generation_start_time') and self._current_generation_model:
+            from datetime import datetime
+            end_time = datetime.now()
+            response_time = (end_time - self._generation_start_time).total_seconds()
+            
+            # Estimate tokens (rough approximation: 4 characters = 1 token)
+            if hasattr(self, '_generation_tokens'):
+                tokens = self._generation_tokens
+            else:
+                # Get the last AI message to estimate tokens
+                tokens = 0
+                for msg in reversed(self._display_messages):
+                    if msg.get("sender") == "AI":
+                        tokens = len(msg.get("message", "")) // 4
+                        break
+            
+            # Calculate tokens per second
+            tokens_per_second = tokens / response_time if response_time > 0 else 0
+            
+            # Store performance metrics
+            self._model_performance[self._current_generation_model] = {
+                'response_time': round(response_time, 2),
+                'tokens': tokens,
+                'tokens_per_second': round(tokens_per_second, 1),
+                'timestamp': end_time.isoformat()
+            }
+        
         self._streaming_in_progress = False
         self._current_stream_timestamp = None
         self._current_generation_model = None
@@ -1705,7 +1844,8 @@ class ChatWindow(QMainWindow):
         entry = {
             "sender": "" if sender is None else str(sender),
             "message": "" if message is None else str(message),
-            "timestamp": timestamp or datetime.now().strftime("%H:%M:%S")
+            "timestamp": timestamp or datetime.now().strftime("%H:%M:%S"),
+            "model_info": self._get_model_info() if sender == "AI" else ""
         }
         self._display_messages.append(entry)
         return entry
@@ -1714,14 +1854,25 @@ class ChatWindow(QMainWindow):
         """Re-render all stored display messages using current timestamp preference."""
         lines = []
         show_timestamps = bool(self.settings.ui.show_timestamps)
+        show_model_info = bool(self.settings.ui.show_model_info)
+        
         for entry in self._display_messages:
             sender = entry.get("sender", "")
             message = entry.get("message", "")
             timestamp = entry.get("timestamp", "")
+            model_info = entry.get("model_info", "")
+            
+            # Build the message line
             if show_timestamps and timestamp:
-                lines.append(f"[{timestamp}] {sender}: {message}")
+                base_line = f"[{timestamp}] {sender}: {message}"
             else:
-                lines.append(f"{sender}: {message}")
+                base_line = f"{sender}: {message}"
+            
+            # Add model info if enabled and available
+            if show_model_info and model_info and sender == "AI":
+                base_line += f"\n📊 {model_info}"
+            
+            lines.append(base_line)
 
         self.chat_display.setPlainText("\n".join(lines))
         if self.settings.ui.auto_scroll:
@@ -1729,6 +1880,376 @@ class ChatWindow(QMainWindow):
             cursor.movePosition(cursor.MoveOperation.End)
             self.chat_display.setTextCursor(cursor)
             self.chat_display.ensureCursorVisible()
+    
+    def _get_model_info(self) -> str:
+        """Get detailed information about the current model."""
+        try:
+            if not self._current_selected_model:
+                return "No model selected"
+            
+            # Parse model string (provider/model)
+            if "/" in self._current_selected_model:
+                provider, model_name = self._current_selected_model.split("/", 1)
+            else:
+                provider = "unknown"
+                model_name = self._current_selected_model
+            
+            # Get basic model info
+            info_parts = [f"Model: {model_name}", f"Provider: {provider}"]
+            
+            # Add provider-specific info
+            if provider.lower() == "openai":
+                info_parts.extend(self._get_openai_model_info(model_name))
+            elif provider.lower() == "ollama":
+                info_parts.extend(self._get_ollama_model_info(model_name))
+            elif provider.lower() == "groq":
+                info_parts.extend(self._get_groq_model_info(model_name))
+            elif provider.lower() == "huggingface":
+                info_parts.extend(self._get_huggingface_model_info(model_name))
+            elif provider.lower() == "openrouter":
+                info_parts.extend(self._get_openrouter_model_info(model_name))
+            else:
+                info_parts.append("Provider: Unknown")
+            
+            # Add real-time health status
+            health_key = self._current_selected_model
+            if health_key in self._model_health:
+                status = "✅ Healthy" if self._model_health[health_key] else "⚠️ Unhealthy"
+                info_parts.append(f"Status: {status}")
+            
+            # Add performance metrics if available
+            if hasattr(self, '_model_performance') and health_key in self._model_performance:
+                perf = self._model_performance[health_key]
+                if 'response_time' in perf:
+                    info_parts.append(f"Response: {perf['response_time']}s")
+                if 'tokens_per_second' in perf:
+                    info_parts.append(f"Speed: {perf['tokens_per_second']} t/s")
+            
+            # Add context window info
+            context_info = self._get_context_window_info(provider, model_name)
+            if context_info:
+                info_parts.append(f"Context: {context_info}")
+            
+            # Add cost information for cloud models
+            if provider.lower() in ["openai", "groq", "openrouter"]:
+                cost_info = self._get_cost_info(provider, model_name)
+                if cost_info:
+                    info_parts.append(f"Cost: {cost_info}")
+            
+            return " | ".join(info_parts)
+            
+        except Exception as e:
+            self.logger.debug(f"Failed to get model info: {e}")
+            return f"Model: {self._current_selected_model or 'Unknown'}"
+    
+    def _get_openai_model_info(self, model_name: str) -> List[str]:
+        """Get OpenAI model information."""
+        info = []
+        
+        # Model size/capability based on name
+        if "gpt-4" in model_name:
+            if "turbo" in model_name:
+                info.append("Size: Large (GPT-4 Turbo)")
+                info.append("Speed: Fast")
+            elif "32k" in model_name:
+                info.append("Context: 32K tokens")
+            elif "vision" in model_name:
+                info.append("Capability: Vision")
+            else:
+                info.append("Size: Large (GPT-4)")
+        elif "gpt-3.5" in model_name:
+            info.append("Size: Medium (GPT-3.5)")
+            info.append("Speed: Fast")
+        elif "davinci" in model_name:
+            info.append("Size: Large (Davinci)")
+            info.append("Legacy: Yes")
+        elif "babbage" in model_name:
+            info.append("Size: Small (Babbage)")
+            info.append("Legacy: Yes")
+        elif "curie" in model_name:
+            info.append("Size: Medium (Curie)")
+            info.append("Legacy: Yes")
+        else:
+            info.append("Size: Unknown")
+        
+        return info
+    
+    def _get_ollama_model_info(self, model_name: str) -> List[str]:
+        """Get Ollama model information."""
+        info = []
+        
+        # Extract size from model name
+        if "1b" in model_name.lower():
+            info.append("Size: Tiny (1B parameters)")
+        elif "3b" in model_name.lower():
+            info.append("Size: Small (3B parameters)")
+        elif "7b" in model_name.lower():
+            info.append("Size: Medium (7B parameters)")
+        elif "13b" in model_name.lower():
+            info.append("Size: Large (13B parameters)")
+        elif "34b" in model_name.lower():
+            info.append("Size: Very Large (34B parameters)")
+        elif "70b" in model_name.lower():
+            info.append("Size: Huge (70B parameters)")
+        else:
+            info.append("Size: Unknown")
+        
+        # Model family
+        if "llama" in model_name.lower():
+            info.append("Family: Llama")
+        elif "mistral" in model_name.lower():
+            info.append("Family: Mistral")
+        elif "qwen" in model_name.lower():
+            info.append("Family: Qwen")
+        elif "codellama" in model_name.lower():
+            info.append("Family: CodeLlama")
+            info.append("Specialty: Code")
+        else:
+            info.append("Family: Unknown")
+        
+        # Special capabilities
+        if "instruct" in model_name.lower():
+            info.append("Type: Instruction-tuned")
+        if "chat" in model_name.lower():
+            info.append("Type: Chat")
+        
+        info.append("Hosting: Local")
+        return info
+    
+    def _get_groq_model_info(self, model_name: str) -> List[str]:
+        """Get Groq model information."""
+        info = []
+        
+        if "llama" in model_name.lower():
+            info.append("Family: Llama")
+            if "70b" in model_name.lower():
+                info.append("Size: Large (70B)")
+            elif "8b" in model_name.lower():
+                info.append("Size: Small (8B)")
+        elif "mixtral" in model_name.lower():
+            info.append("Family: Mixtral")
+            info.append("Size: Large")
+        elif "gemma" in model_name.lower():
+            info.append("Family: Gemma")
+            if "7b" in model_name.lower():
+                info.append("Size: Medium (7B)")
+        
+        info.append("Speed: Ultra-fast")
+        info.append("Hosting: Groq Cloud")
+        return info
+    
+    def _get_huggingface_model_info(self, model_name: str) -> List[str]:
+        """Get HuggingFace model information."""
+        info = []
+        
+        # Common model patterns
+        if "bert" in model_name.lower():
+            info.append("Family: BERT")
+            info.append("Type: Encoder-only")
+        elif "gpt" in model_name.lower():
+            info.append("Family: GPT")
+            info.append("Type: Decoder-only")
+        elif "t5" in model_name.lower():
+            info.append("Family: T5")
+            info.append("Type: Encoder-decoder")
+        elif "distil" in model_name.lower():
+            info.append("Optimization: Distilled")
+        else:
+            info.append("Family: Unknown")
+        
+        info.append("Hosting: HuggingFace")
+        return info
+    
+    def _get_openrouter_model_info(self, model_name: str) -> List[str]:
+        """Get OpenRouter model information."""
+        info = []
+        
+        # OpenRouter provides access to many models
+        if "anthropic" in model_name.lower() or "claude" in model_name.lower():
+            info.append("Provider: Anthropic")
+        elif "google" in model_name.lower() or "gemini" in model_name.lower():
+            info.append("Provider: Google")
+        elif "meta" in model_name.lower() or "llama" in model_name.lower():
+            info.append("Provider: Meta")
+        elif "mistral" in model_name.lower():
+            info.append("Provider: Mistral AI")
+        else:
+            info.append("Provider: Various")
+        
+        info.append("Hosting: OpenRouter")
+        return info
+    
+    def _get_context_window_info(self, provider: str, model_name: str) -> str:
+        """Get context window information for a model."""
+        try:
+            # Known context windows for popular models
+            context_windows = {
+                # OpenAI
+                "openai/gpt-4": "8K",
+                "openai/gpt-4-32k": "32K", 
+                "openai/gpt-4-turbo": "128K",
+                "openai/gpt-4-turbo-128k": "128K",
+                "openai/gpt-3.5-turbo": "4K",
+                "openai/gpt-3.5-turbo-16k": "16K",
+                
+                # Ollama models (approximate)
+                "ollama/llama3.2:1b": "128K",
+                "ollama/llama3.2:3b": "128K", 
+                "ollama/llama3:1b": "4K",
+                "ollama/llama3:8b": "8K",
+                "ollama/llama3:70b": "4K",
+                "ollama/mistral:7b": "8K",
+                "ollama/qwen2.5:3b": "32K",
+                "ollama/qwen2.5:7b": "32K",
+                "ollama/phi3.5:3.8b": "4K",
+                
+                # Groq
+                "groq/llama2-70b-4096": "4K",
+                "groq/mixtral-8x7b-32768": "32K",
+                "groq/gemma-7b-it": "8K",
+            }
+            
+            key = f"{provider.lower()}/{model_name.lower()}"
+            for model_key, context in context_windows.items():
+                if model_key in key or key in model_key:
+                    return context
+            
+            # Try to extract from model name
+            if "32k" in model_name.lower():
+                return "32K"
+            elif "16k" in model_name.lower():
+                return "16K"
+            elif "8k" in model_name.lower():
+                return "8K"
+            elif "4k" in model_name.lower():
+                return "4K"
+            elif "128k" in model_name.lower():
+                return "128K"
+            
+            return "Unknown"
+            
+        except Exception as e:
+            self.logger.debug(f"Failed to get context info: {e}")
+            return "Unknown"
+    
+    def _get_cost_info(self, provider: str, model_name: str) -> str:
+        """Get cost information for cloud models."""
+        try:
+            # Approximate costs per 1M tokens (input/output)
+            costs = {
+                # OpenAI
+                "openai/gpt-4": "$10/$30",
+                "openai/gpt-4-turbo": "$10/$30", 
+                "openai/gpt-3.5-turbo": "$0.50/$1.50",
+                
+                # Groq (usually free tier with limits)
+                "groq/llama2-70b-4096": "Free tier",
+                "groq/mixtral-8x7b-32768": "Free tier",
+                "groq/gemma-7b-it": "Free tier",
+                
+                # OpenRouter (varies by model)
+                "openrouter/": "Various",
+            }
+            
+            key = f"{provider.lower()}/{model_name.lower()}"
+            for model_key, cost in costs.items():
+                if model_key in key:
+                    return cost
+            
+            return "Check provider"
+            
+        except Exception as e:
+            self.logger.debug(f"Failed to get cost info: {e}")
+            return "Unknown"
+    
+    def toggle_search(self):
+        """Toggle search visibility."""
+        if self.search_toolbar.isVisible():
+            self.close_search()
+        else:
+            self.open_search()
+    
+    def open_search(self):
+        """Open search toolbar."""
+        self.search_toolbar.setVisible(True)
+        self.search_input.setFocus()
+        self.search_input.selectAll()
+    
+    def close_search(self):
+        """Close search toolbar."""
+        self.search_toolbar.setVisible(False)
+        self.chat_display.setFocus()
+        self._clear_search_highlight()
+    
+    def search_next(self):
+        """Search for next occurrence."""
+        self._perform_search(forward=True)
+    
+    def search_previous(self):
+        """Search for previous occurrence."""
+        self._perform_search(forward=False)
+    
+    def _perform_search(self, forward: bool = True):
+        """Perform search with highlighting."""
+        search_text = self.search_input.text().strip()
+        if not search_text:
+            self._update_search_results(0, 0)
+            return
+        
+        # Get search options
+        case_sensitive = self.search_case_sensitive.isChecked()
+        whole_words = self.search_whole_words.isChecked()
+        
+        # Configure QTextDocument search flags
+        flags = QTextDocument.FindFlag(0)
+        if case_sensitive:
+            flags |= QTextDocument.FindFlag.FindCaseSensitively
+        if whole_words:
+            flags |= QTextDocument.FindFlag.FindWholeWords
+        
+        # Get cursor
+        cursor = self.chat_display.textCursor()
+        
+        # Perform search
+        if forward:
+            found_cursor = self.chat_display.document().find(search_text, cursor, flags)
+        else:
+            # Search backward
+            cursor.movePosition(cursor.MoveOperation.Start)
+            found_cursor = self.chat_display.document().find(search_text, cursor, flags)
+        
+        if found_cursor.isNull():
+            # Wrap around
+            if forward:
+                cursor.movePosition(cursor.MoveOperation.Start)
+            else:
+                cursor.movePosition(cursor.MoveOperation.End)
+            found_cursor = self.chat_display.document().find(search_text, cursor, flags)
+        
+        if not found_cursor.isNull():
+            self.chat_display.setTextCursor(found_cursor)
+            self._update_search_results(1, 1)  # For simplicity, show current match
+        else:
+            self._update_search_results(0, 0)
+    
+    def _clear_search_highlight(self):
+        """Clear search highlighting."""
+        cursor = self.chat_display.textCursor()
+        cursor.movePosition(cursor.MoveOperation.Start)
+        cursor.select(cursor.SelectionType.Document)
+        format = cursor.charFormat()
+        format.setBackground(QColor("transparent"))
+        cursor.mergeCharFormat(format)
+        self.chat_display.setTextCursor(cursor)
+    
+    def _update_search_results(self, current: int, total: int):
+        """Update search results label."""
+        if total == 0:
+            self.search_results_label.setText("No results")
+        elif total == 1:
+            self.search_results_label.setText("1 result")
+        else:
+            self.search_results_label.setText(f"{current}/{total} results")
     
     def add_message(self, sender: str, message: str):
         """Add a message to the chat display."""
@@ -1749,12 +2270,15 @@ class ChatWindow(QMainWindow):
         self._code_snippets = []
         if hasattr(self, "code_blocks_list"):
             self.code_blocks_list.clear()
-        if hasattr(self, "code_preview"):
-            self.code_preview.clear()
-        if hasattr(self, "copy_code_button"):
-            self._update_snippet_action_state()
-        if self.settings.chat.save_history:
-            self.history_manager.clear_history()
+    
+    def copy_chat(self):
+        """Copy the entire chat content to clipboard."""
+        chat_text = self.chat_display.toPlainText()
+        if chat_text.strip():
+            QApplication.clipboard().setText(chat_text)
+            self.status_bar.showMessage("Chat copied to clipboard", 3000)
+        else:
+            self.status_bar.showMessage("No chat content to copy", 3000)
     
     def export_chat(self):
         """Export chat history."""
@@ -1844,6 +2368,10 @@ class ChatWindow(QMainWindow):
         """Toggle model info display."""
         self.settings.update_ui_config(show_model_info=self.model_info_action.isChecked())
     
+    def open_settings(self, default_tab: str = "Providers"):
+        """Open settings dialog - alias for show_provider_settings."""
+        self.show_provider_settings(default_tab)
+    
     def show_provider_settings(self, default_tab: str = "Providers"):
         """Show provider configuration dialog."""
         try:
@@ -1874,8 +2402,7 @@ class ChatWindow(QMainWindow):
             
             # Reinitialize providers and refresh model list immediately.
             self.init_providers_sync()
-            self.model_combo.update()
-            self.status_label.update()
+            # The model combo and status label are already updated by init_providers_sync via update_model_list_ui
             
             self.logger.info("Settings applied successfully")
             
@@ -1898,12 +2425,384 @@ class ChatWindow(QMainWindow):
     def on_system_check_complete(self, report: str):
         """Handle successful completion of system checks."""
         self.status_bar.showMessage("System check completed")
-        dialog = QMessageBox(self)
+        self._show_system_check_dialog(report)
+    
+    def _show_system_check_dialog(self, report: str):
+        """Show enhanced system check dialog with remediation options."""
+        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLabel, QScrollArea
+        
+        dialog = QDialog(self)
         dialog.setWindowTitle("System Check Results")
-        dialog.setText("System check completed")
-        dialog.setDetailedText(report)
-        dialog.setIcon(QMessageBox.Icon.Information)
+        dialog.setMinimumSize(800, 600)
+        
+        layout = QVBoxLayout(dialog)
+        
+        # Title
+        title_label = QLabel("System Check Results")
+        title_label.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
+        layout.addWidget(title_label)
+        
+        # Create scrollable area for report
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setMinimumHeight(400)
+        
+        report_widget = QWidget()
+        report_layout = QVBoxLayout(report_widget)
+        
+        # Report text
+        report_text = QTextEdit()
+        report_text.setPlainText(report)
+        report_text.setReadOnly(True)
+        report_text.setMaximumHeight(300)
+        report_layout.addWidget(report_text)
+        
+        # Remediation section
+        remediation_label = QLabel("Remediation Actions:")
+        remediation_label.setStyleSheet("font-size: 14px; font-weight: bold; margin-top: 10px;")
+        report_layout.addWidget(remediation_label)
+        
+        remediation_text = QTextEdit()
+        remediation_text.setPlainText(self._generate_remediation_advice())
+        remediation_text.setReadOnly(True)
+        remediation_text.setMaximumHeight(200)
+        report_layout.addWidget(remediation_text)
+        
+        scroll_area.setWidget(report_widget)
+        layout.addWidget(scroll_area)
+        
+        # Action buttons
+        button_layout = QHBoxLayout()
+        
+        # Common remediation actions
+        install_deps_btn = QPushButton("Install Missing Dependencies")
+        install_deps_btn.clicked.connect(lambda: self._install_dependencies(dialog))
+        button_layout.addWidget(install_deps_btn)
+        
+        start_ollama_btn = QPushButton("Start Ollama Service")
+        start_ollama_btn.clicked.connect(lambda: self._start_ollama_service(dialog))
+        button_layout.addWidget(start_ollama_btn)
+        
+        fix_permissions_btn = QPushButton("Fix Permissions")
+        fix_permissions_btn.clicked.connect(lambda: self._fix_permissions(dialog))
+        button_layout.addWidget(fix_permissions_btn)
+        
+        check_config_btn = QPushButton("Check Configuration")
+        check_config_btn.clicked.connect(lambda: self._check_configuration(dialog))
+        button_layout.addWidget(check_config_btn)
+        
+        refresh_btn = QPushButton("Refresh Check")
+        refresh_btn.clicked.connect(lambda: self._refresh_system_check(dialog))
+        button_layout.addWidget(refresh_btn)
+        
+        button_layout.addStretch()
+        
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(dialog.accept)
+        button_layout.addWidget(close_btn)
+        
+        layout.addLayout(button_layout)
+        
         dialog.exec()
+    
+    def _generate_remediation_advice(self) -> str:
+        """Generate remediation advice based on common issues."""
+        advice = """
+COMMON REMEDIATION STEPS:
+
+1. Missing Dependencies:
+   • Run: pip install -r requirements.txt
+   • Or: pip install PyQt6 aiohttp cryptography psutil markdown jsonschema rich
+   • Ensure virtual environment is activated
+
+2. Network Issues:
+   • Check internet connection
+   • Verify firewall settings
+   • Test API key validity in Settings > Configure Providers
+
+3. Provider Configuration:
+   • Open Settings > Configure Providers
+   • Enter valid API keys for each provider
+   • Test provider connectivity
+
+4. Performance Issues:
+   • Close unnecessary applications
+   • Check available disk space
+   • Restart application if needed
+
+5. File Permissions:
+   • Ensure write permissions for config directory
+   • Check ~/.local/share/chat-linux-client/ directory
+   • Run with appropriate user permissions
+
+AUTOMATED FIXES:
+• Click "Install Missing Dependencies" to auto-install packages
+• Click "Check Configuration" to verify settings
+• Click "Refresh Check" to re-run system checks
+
+For more help, check the documentation or report issues on GitHub.
+"""
+        return advice
+    
+    def _install_dependencies(self, parent_dialog):
+        """Install missing dependencies."""
+        try:
+            self.status_bar.showMessage("Installing dependencies...")
+            
+            # Run pip install in background
+            import subprocess
+            import sys
+            
+            requirements_file = os.path.join(os.path.dirname(__file__), "..", "requirements.txt")
+            
+            if os.path.exists(requirements_file):
+                cmd = [sys.executable, "-m", "pip", "install", "-r", requirements_file]
+            else:
+                cmd = [sys.executable, "-m", "pip", "install", 
+                      "PyQt6", "aiohttp", "cryptography", "psutil", "markdown", "jsonschema", "rich"]
+            
+            # Run in background thread to avoid blocking UI
+            from PyQt6.QtCore import QThread
+            
+            class InstallThread(QThread):
+                def __init__(self, command):
+                    super().__init__()
+                    self.command = command
+                
+                def run(self):
+                    try:
+                        result = subprocess.run(self.command, capture_output=True, text=True, timeout=300)
+                        self.result = result.returncode == 0
+                        self.output = result.stdout + result.stderr
+                    except Exception as e:
+                        self.result = False
+                        self.output = str(e)
+            
+            install_thread = InstallThread(cmd)
+            install_thread.finished.connect(
+                lambda: self._on_install_complete(install_thread, parent_dialog)
+            )
+            install_thread.start()
+            
+            QMessageBox.information(parent_dialog, "Installation Started", 
+                                 "Dependency installation started in background. Check status bar for progress.")
+            
+        except Exception as e:
+            QMessageBox.critical(parent_dialog, "Error", f"Failed to start installation: {e}")
+    
+    def _on_install_complete(self, thread: QThread, parent_dialog):
+        """Handle completion of dependency installation."""
+        try:
+            if hasattr(thread, 'result') and thread.result:
+                QMessageBox.information(parent_dialog, "Installation Complete", 
+                                     "Dependencies installed successfully! Please restart the application.")
+            else:
+                error_msg = getattr(thread, 'output', 'Unknown error')
+                QMessageBox.warning(parent_dialog, "Installation Failed", 
+                                f"Installation failed: {error_msg}")
+        except Exception as e:
+            self.logger.error(f"Error handling install completion: {e}")
+    
+    def _check_configuration(self, parent_dialog):
+        """Check application configuration."""
+        try:
+            issues = []
+            
+            # Check settings file
+            config_file = os.path.expanduser("~/.config/chat-linux-client/config.json")
+            if not os.path.exists(config_file):
+                issues.append("Configuration file not found - will be created on first run")
+            
+            # Check API keys
+            has_keys = False
+            for provider_name in ["openai", "groq", "huggingface", "openrouter"]:
+                key = self.key_handler.get_key(provider_name)
+                if key:
+                    has_keys = True
+                    break
+            
+            if not has_keys:
+                issues.append("No API keys configured - configure in Settings > Configure Providers")
+            
+            # Check directories
+            data_dir = os.path.expanduser("~/.local/share/chat-linux-client")
+            if not os.path.exists(data_dir):
+                issues.append("Data directory not found - will be created automatically")
+            
+            if issues:
+                QMessageBox.information(parent_dialog, "Configuration Issues", 
+                                     "\n".join(f"• {issue}" for issue in issues))
+            else:
+                QMessageBox.information(parent_dialog, "Configuration OK", 
+                                     "Configuration appears to be correct!")
+                
+        except Exception as e:
+            QMessageBox.critical(parent_dialog, "Error", f"Failed to check configuration: {e}")
+    
+    def _start_ollama_service(self, parent_dialog):
+        """Start Ollama service with one-click fix."""
+        try:
+            self.status_bar.showMessage("Starting Ollama service...")
+            
+            # Check if ollama is installed
+            import subprocess
+            import shutil
+            
+            if not shutil.which("ollama"):
+                # Try to add to PATH and check again
+                ollama_path = os.path.expanduser("~/.local/bin/ollama")
+                if os.path.exists(ollama_path):
+                    ollama_cmd = ollama_path
+                else:
+                    QMessageBox.warning(parent_dialog, "Ollama Not Found", 
+                                      "Ollama is not installed. Please install it first:\n"
+                                      "curl -fsSL https://ollama.com/install.sh | sh")
+                    return
+            else:
+                ollama_cmd = "ollama"
+            
+            # Start ollama in background
+            cmd = [ollama_cmd, "serve"]
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            # Wait a moment and check if it's running
+            import time
+            time.sleep(2)
+            
+            # Test if ollama is responding
+            try:
+                import requests
+                response = requests.get("http://localhost:11434/api/version", timeout=5)
+                if response.status_code == 200:
+                    self.status_bar.showMessage("Ollama service started successfully")
+                    QMessageBox.information(parent_dialog, "Success", 
+                                          "Ollama service has been started successfully!\n"
+                                          "You can now use local AI models.")
+                else:
+                    QMessageBox.warning(parent_dialog, "Warning", 
+                                      "Ollama started but not responding properly.")
+            except:
+                QMessageBox.warning(parent_dialog, "Warning", 
+                                  "Ollama started but may not be responding yet.\n"
+                                  "Please wait a moment and try again.")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to start Ollama service: {e}")
+            QMessageBox.critical(parent_dialog, "Error", f"Failed to start Ollama service: {e}")
+    
+    def _fix_permissions(self, parent_dialog):
+        """Fix common permission issues with one-click fix."""
+        try:
+            self.status_bar.showMessage("Fixing permissions...")
+            
+            import subprocess
+            import os
+            
+            # Fix virtual environment permissions
+            venv_path = os.path.join(os.path.dirname(__file__), "..", "venv")
+            if os.path.exists(venv_path):
+                subprocess.run(["chmod", "-R", "u+rw", venv_path], capture_output=True)
+                subprocess.run(["chmod", "+x", os.path.join(venv_path, "bin", "activate")], 
+                             capture_output=True)
+            
+            # Fix config directory permissions
+            config_dir = os.path.expanduser("~/.config/chat-linux-client")
+            os.makedirs(config_dir, exist_ok=True)
+            subprocess.run(["chmod", "u+rw", config_dir], capture_output=True)
+            
+            # Fix data directory permissions
+            data_dir = os.path.expanduser("~/.local/share/chat-linux-client")
+            os.makedirs(data_dir, exist_ok=True)
+            subprocess.run(["chmod", "-R", "u+rw", data_dir], capture_output=True)
+            
+            self.status_bar.showMessage("Permissions fixed successfully")
+            QMessageBox.information(parent_dialog, "Success", 
+                                  "Permissions have been fixed for:\n"
+                                  "• Virtual environment\n"
+                                  "• Configuration directory\n"
+                                  "• Data storage directory\n\n"
+                                  "Please restart the application if you encounter issues.")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to fix permissions: {e}")
+            QMessageBox.critical(parent_dialog, "Error", f"Failed to fix permissions: {e}")
+    
+    def _refresh_system_check(self, parent_dialog):
+        """Refresh system check."""
+        parent_dialog.accept()
+        self.run_system_check()
+    
+    def update_provider_health_status(self):
+        """Update provider health status in status bar."""
+        try:
+            if not hasattr(self, 'router') or not self.router:
+                self.health_label.setText("🔍 Not initialized")
+                self.health_label.setToolTip("Router not initialized")
+                return
+            
+            # Count providers by status
+            total_providers = len(self.router.providers)
+            available_providers = sum(
+                1 for provider in self.router.providers.values() 
+                if getattr(provider, 'is_available', False)
+            )
+            healthy_providers = 0
+            unhealthy_providers = 0
+            
+            # Build detailed tooltip information
+            tooltip_details = []
+            tooltip_details.append(f"Total Providers: {total_providers}")
+            tooltip_details.append(f"Available: {available_providers}")
+            
+            # Check model health for each provider
+            for provider_name, provider in self.router.providers.items():
+                provider_status = "✅ Available" if getattr(provider, 'is_available', False) else "❌ Unavailable"
+                tooltip_details.append(f"\n{provider_name}: {provider_status}")
+                
+                if getattr(provider, 'is_available', False):
+                    # Count models for this provider
+                    provider_models = [
+                        key for key in self._model_health.keys() 
+                        if key.startswith(f"{provider_name}/")
+                    ]
+                    healthy_models = sum(
+                        1 for model in provider_models 
+                        if self._model_health.get(model, True)
+                    )
+                    
+                    tooltip_details.append(f"  Models: {len(provider_models)} ({healthy_models} healthy)")
+                    
+                    # Check if any models for this provider are healthy
+                    provider_models_healthy = any(
+                        key.startswith(f"{provider_name}/") and self._model_health.get(key, True)
+                        for key in self._model_health.keys()
+                    )
+                    if provider_models_healthy:
+                        healthy_providers += 1
+                    else:
+                        unhealthy_providers += 1
+                else:
+                    tooltip_details.append(f"  Models: Not accessible")
+            
+            # Update tooltip
+            self.health_label.setToolTip("\n".join(tooltip_details))
+            
+            # Update status display
+            if available_providers == 0:
+                self.health_label.setText("❌ No providers")
+                self.health_label.setStyleSheet("color: #d32f2f; font-size: 11px; padding: 2px 8px;")
+            elif unhealthy_providers > 0:
+                self.health_label.setText(f"⚠️ {healthy_providers}/{available_providers} healthy")
+                self.health_label.setStyleSheet("color: #f57c00; font-size: 11px; padding: 2px 8px;")
+            else:
+                self.health_label.setText(f"✅ {available_providers} providers")
+                self.health_label.setStyleSheet("color: #388e3c; font-size: 11px; padding: 2px 8px;")
+                
+        except Exception as e:
+            self.logger.debug(f"Failed to update provider health status: {e}")
+            self.health_label.setText("❓ Unknown")
+            self.health_label.setStyleSheet("color: #666; font-size: 11px; padding: 2px 8px;")
+            self.health_label.setToolTip(f"Error checking health: {str(e)}")
 
     def on_system_check_error(self, error_message: str):
         """Handle system check errors."""
@@ -1914,6 +2813,229 @@ class ChatWindow(QMainWindow):
     def on_system_check_finished(self):
         """Cleanup after system check worker finishes."""
         self.system_check_worker = None
+    
+    def show_health_dashboard(self):
+        """Show provider health monitoring dashboard."""
+        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QLabel, QScrollArea, QFrame, QGridLayout, QGroupBox
+        
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Provider Health Dashboard")
+        dialog.setMinimumSize(800, 600)
+        
+        layout = QVBoxLayout(dialog)
+        
+        # Title
+        title_label = QLabel("Provider Health Monitoring Dashboard")
+        title_label.setStyleSheet("font-size: 18px; font-weight: bold; margin: 10px;")
+        layout.addWidget(title_label)
+        
+        # Main content area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setMinimumHeight(500)
+        
+        dashboard_widget = QWidget()
+        dashboard_layout = QVBoxLayout(dashboard_widget)
+        
+        # Overall status section
+        status_group = QGroupBox("Overall Status")
+        status_layout = QGridLayout(status_group)
+        
+        if hasattr(self, 'router') and self.router:
+            total_providers = len(self.router.providers)
+            available_providers = sum(
+                1 for provider in self.router.providers.values() 
+                if getattr(provider, 'is_available', False)
+            )
+            healthy_providers = sum(
+                1 for provider_name, provider in self.router.providers.items()
+                if getattr(provider, 'is_available', False) and any(
+                    key.startswith(f"{provider_name}/") and self._model_health.get(key, True)
+                    for key in self._model_health.keys()
+                )
+            )
+            
+            status_layout.addWidget(QLabel("Total Providers:"), 0, 0)
+            status_layout.addWidget(QLabel(str(total_providers)), 0, 1)
+            status_layout.addWidget(QLabel("Available:"), 1, 0)
+            status_layout.addWidget(QLabel(str(available_providers)), 1, 1)
+            status_layout.addWidget(QLabel("Healthy:"), 2, 0)
+            status_layout.addWidget(QLabel(str(healthy_providers)), 2, 1)
+        else:
+            status_layout.addWidget(QLabel("Status:"), 0, 0)
+            status_layout.addWidget(QLabel("Router not initialized"), 0, 1)
+        
+        dashboard_layout.addWidget(status_group)
+        
+        # Provider details section
+        providers_group = QGroupBox("Provider Details")
+        providers_layout = QVBoxLayout(providers_group)
+        
+        if hasattr(self, 'router') and self.router:
+            for provider_name, provider in self.router.providers.items():
+                provider_frame = QFrame()
+                provider_frame.setFrameStyle(QFrame.Shape.Box)
+                provider_layout = QGridLayout(provider_frame)
+                
+                # Provider name and status
+                status = "✅ Available" if getattr(provider, 'is_available', False) else "❌ Unavailable"
+                provider_layout.addWidget(QLabel(f"<b>{provider_name}</b>"), 0, 0)
+                provider_layout.addWidget(QLabel(status), 0, 1)
+                
+                if getattr(provider, 'is_available', False):
+                    # Model count
+                    provider_models = [
+                        key for key in self._model_health.keys() 
+                        if key.startswith(f"{provider_name}/")
+                    ]
+                    healthy_models = sum(
+                        1 for model in provider_models 
+                        if self._model_health.get(model, True)
+                    )
+                    
+                    provider_layout.addWidget(QLabel("Models:"), 1, 0)
+                    provider_layout.addWidget(QLabel(f"{len(provider_models)} ({healthy_models} healthy)"), 1, 1)
+                    
+                    # Model list
+                    if provider_models:
+                        model_list_text = "\n".join(
+                            f"  {'✅' if self._model_health.get(model, True) else '❌'} {model.split('/', 1)[1]}"
+                            for model in provider_models[:10]
+                        )
+                        if len(provider_models) > 10:
+                            model_list_text += f"\n  ... and {len(provider_models) - 10} more"
+                        
+                        model_text = QTextEdit()
+                        model_text.setPlainText(model_list_text)
+                        model_text.setReadOnly(True)
+                        model_text.setMaximumHeight(150)
+                        provider_layout.addWidget(QLabel("Models:"), 2, 0)
+                        provider_layout.addWidget(model_text, 2, 1)
+                    
+                    # Performance metrics if available
+                    provider_performance = [
+                        (model, metrics) for model, metrics in self._model_performance.items()
+                        if model.startswith(f"{provider_name}/")
+                    ]
+                    if provider_performance:
+                        perf_text = "Performance:\n"
+                        for model, metrics in provider_performance[:5]:
+                            perf_text += f"  {model.split('/', 1)[1]}: {metrics.get('response_time', 'N/A')}s, {metrics.get('tokens_per_second', 'N/A')} t/s\n"
+                        
+                        perf_label = QLabel(perf_text)
+                        perf_label.setStyleSheet("font-family: monospace; font-size: 10px;")
+                        provider_layout.addWidget(perf_label, 3, 0, 1, 2)
+                else:
+                    provider_layout.addWidget(QLabel("Status: Not accessible"), 1, 0, 1, 2)
+                
+                providers_layout.addWidget(provider_frame)
+        else:
+            providers_layout.addWidget(QLabel("No provider data available"))
+        
+        dashboard_layout.addWidget(providers_group)
+        
+        # Performance summary section
+        if self._model_performance:
+            perf_group = QGroupBox("Performance Summary")
+            perf_layout = QVBoxLayout(perf_group)
+            
+            perf_summary = "Recent Performance:\n"
+            for model, metrics in list(self._model_performance.items())[:10]:
+                perf_summary += f"{model}: {metrics.get('response_time', 'N/A')}s, {metrics.get('tokens_per_second', 'N/A')} t/s\n"
+            
+            perf_text = QTextEdit()
+            perf_text.setPlainText(perf_summary)
+            perf_text.setReadOnly(True)
+            perf_text.setMaximumHeight(150)
+            perf_layout.addWidget(perf_text)
+            
+            dashboard_layout.addWidget(perf_group)
+        
+        scroll_area.setWidget(dashboard_widget)
+        layout.addWidget(scroll_area)
+        
+        # Action buttons
+        button_layout = QHBoxLayout()
+        
+        refresh_btn = QPushButton("Refresh")
+        refresh_btn.clicked.connect(lambda: self._refresh_health_dashboard(dialog))
+        button_layout.addWidget(refresh_btn)
+        
+        export_btn = QPushButton("Export Report")
+        export_btn.clicked.connect(lambda: self._export_health_report())
+        button_layout.addWidget(export_btn)
+        
+        button_layout.addStretch()
+        
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(dialog.accept)
+        button_layout.addWidget(close_btn)
+        
+        layout.addLayout(button_layout)
+        
+        dialog.exec()
+    
+    def _refresh_health_dashboard(self, dialog):
+        """Refresh the health dashboard."""
+        dialog.accept()
+        self.update_provider_health_status()
+        self.show_health_dashboard()
+    
+    def _export_health_report(self):
+        """Export health report to file."""
+        try:
+            from datetime import datetime
+            import os
+            
+            report = f"Provider Health Report - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            report += "=" * 60 + "\n\n"
+            
+            if hasattr(self, 'router') and self.router:
+                total_providers = len(self.router.providers)
+                available_providers = sum(
+                    1 for provider in self.router.providers.values() 
+                    if getattr(provider, 'is_available', False)
+                )
+                
+                report += f"Total Providers: {total_providers}\n"
+                report += f"Available Providers: {available_providers}\n\n"
+                
+                for provider_name, provider in self.router.providers.items():
+                    report += f"\n{provider_name}:\n"
+                    report += f"  Status: {'Available' if getattr(provider, 'is_available', False) else 'Unavailable'}\n"
+                    
+                    if getattr(provider, 'is_available', False):
+                        provider_models = [
+                            key for key in self._model_health.keys() 
+                            if key.startswith(f"{provider_name}/")
+                        ]
+                        healthy_models = sum(
+                            1 for model in provider_models 
+                            if self._model_health.get(model, True)
+                        )
+                        
+                        report += f"  Models: {len(provider_models)} ({healthy_models} healthy)\n"
+                        
+                        for model in provider_models:
+                            health = "Healthy" if self._model_health.get(model, True) else "Unhealthy"
+                            report += f"    {model.split('/', 1)[1]}: {health}\n"
+                            
+                            if model in self._model_performance:
+                                metrics = self._model_performance[model]
+                                report += f"      Performance: {metrics.get('response_time', 'N/A')}s, {metrics.get('tokens_per_second', 'N/A')} t/s\n"
+            
+            # Save to file
+            reports_dir = os.path.expanduser("~/.local/share/chat-linux-client/reports")
+            os.makedirs(reports_dir, exist_ok=True)
+            
+            report_file = os.path.join(reports_dir, f"health_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
+            with open(report_file, 'w', encoding='utf-8') as f:
+                f.write(report)
+            
+            QMessageBox.information(self, "Export Success", f"Health report exported to:\n{report_file}")
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Export Error", f"Failed to export health report: {e}")
     
     def show_documentation(self):
         """Show documentation dialog."""

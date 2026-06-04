@@ -430,6 +430,68 @@ class SettingsDialog(QDialog):
             index = tab_names.index(self.default_tab)
             self.tab_widget.setCurrentIndex(index)
     
+    def populate_default_model_combo(self):
+        """Populate the default model combo box with available models."""
+        try:
+            # Import here to avoid circular imports
+            import asyncio
+            from core.provider_router import ProviderRouter
+            
+            # Create a temporary router to get available models
+            router = ProviderRouter(self.settings_manager)
+            
+            # Run async method in sync context
+            loop = asyncio.new_event_loop()
+            try:
+                # Get provider configuration
+                provider_config = self.settings_manager.get_provider_dict(self.key_handler)
+                loop.run_until_complete(router.initialize_providers(provider_config))
+                models = loop.run_until_complete(router.get_all_models())
+                
+                # Clear and populate combo box
+                self.default_model_combo.clear()
+                self.default_model_combo.addItem("Select Model...", None)
+                
+                # Add models grouped by provider
+                for provider_name, model_list in models.items():
+                    if model_list:  # Only add providers that have models
+                        # Add provider as separator
+                        self.default_model_combo.addItem(f"--- {provider_name.upper()} ---", None)
+                        # Add models for this provider
+                        for model in sorted(model_list):
+                            display_name = f"{model} ({provider_name})"
+                            self.default_model_combo.addItem(display_name, model)
+                
+                # Set current selection if default model is configured
+                current_default = self.settings_manager.chat.default_model
+                if current_default:
+                    index = self.default_model_combo.findData(current_default)
+                    if index >= 0:
+                        self.default_model_combo.setCurrentIndex(index)
+                else:
+                    self.default_model_combo.setCurrentIndex(0)  # "Select Model..."
+                    
+            except Exception as e:
+                self.logger.warning(f"Could not populate models: {e}")
+                # Fallback: add basic model options
+                self.default_model_combo.clear()
+                self.default_model_combo.addItem("Select Model...", None)
+                self.default_model_combo.addItem("llama3.2:1b (ollama)", "llama3.2:1b")
+                self.default_model_combo.addItem("qwen2.5:3b (ollama)", "qwen2.5:3b")
+                self.default_model_combo.addItem("mistral:7b (ollama)", "mistral:7b")
+                self.default_model_combo.addItem("gpt-3.5-turbo (openai)", "gpt-3.5-turbo")
+                self.default_model_combo.addItem("gpt-4 (openai)", "gpt-4")
+                
+            finally:
+                try:
+                    loop.run_until_complete(loop.shutdown_asyncgens())
+                except Exception:
+                    pass
+                loop.close()
+                
+        except Exception as e:
+            self.logger.error(f"Failed to populate default model combo: {e}")
+    
     def load_all_settings(self):
         """Load all current settings into the dialog."""
         try:
@@ -459,6 +521,8 @@ class SettingsDialog(QDialog):
             self.delete_keys_on_exit_checkbox.setChecked(self.settings_manager.privacy.delete_api_keys_on_exit)
             self.disable_telemetry_checkbox.setChecked(self.settings_manager.privacy.disable_telemetry)
             self.local_storage_only_checkbox.setChecked(self.settings_manager.privacy.local_storage_only)
+            # Populate default model combo with available models
+            self.populate_default_model_combo()
             self.update_key_store_status()
             
             self.logger.info("Settings loaded into dialog")
@@ -494,6 +558,10 @@ class SettingsDialog(QDialog):
             self.settings_manager.chat.stream_responses = self.stream_responses_checkbox.isChecked()
             self.settings_manager.chat.save_history = self.save_history_checkbox.isChecked()
             self.settings_manager.chat.context_window = self.context_window_spinbox.value()
+            
+            # Save default model selection
+            selected_model = self.default_model_combo.currentData()
+            self.settings_manager.chat.default_model = selected_model
             
             # Save privacy settings
             self.settings_manager.privacy.encrypt_chats = self.encrypt_chats_checkbox.isChecked()

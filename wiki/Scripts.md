@@ -1,475 +1,191 @@
-# Scripts
+[Scripts](Scripts)
 
 This guide covers the utility scripts provided with Chat Linux Client for installation, running, and building.
 
-## Table of Contents
+Table of Contents
+Overview
+Installation Script
+Run Script
+AppImage Build Script
+Custom Scripts
+Troubleshooting Scripts
 
-- [Overview](#overview)
-- [Installation Script](#installation-script)
-- [Run Script](#run-script)
-- [AppImage Build Script](#appimage-build-script)
-- [Custom Scripts](#custom-scripts)
-- [Troubleshooting Scripts](#troubleshooting-scripts)
+Overview
 
-## Overview
-
-Chat Linux Client includes several utility scripts in the `scripts/` directory:
-
-- `install.sh` - Automated installation
-- `run.sh` - Application launcher
-- `build_appimage.sh` - AppImage builder
+Chat Linux Client includes several utility scripts in the scripts/ directory:
+install.sh - Automated installation
+run.sh - Application launcher
+buildappimage.sh - AppImage builder
 
 These scripts simplify common tasks and ensure consistency across different systems.
 
-## Installation Script
+Installation Script
 
-### Location
+Location
 
-`scripts/install.sh`
+scripts/install.sh
 
-### Purpose
+Purpose
 
 Automates the installation process including:
-- Python version check
-- Virtual environment creation
-- Dependency installation
-- Directory setup
-- Permission configuration
+Python version check
+Virtual environment creation
+Dependency installation
+Directory setup
+Permission configuration
 
-### Usage
+[Usage](Usage)
 
-```bash
-./scripts/install.sh
-```
+What It Does
+Checks Python version
+Creates virtual environment
+Installs dependencies
+Sets up directories
+Sets permissions
 
-### What It Does
-
-1. **Checks Python version**
-   ```bash
-   python_version=$(python3 --version 2>&1 | awk '{print $2}')
-   # Verifies Python 3.8+
-   ```
-
-2. **Creates virtual environment**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-
-3. **Installs dependencies**
-   ```bash
-   pip install --upgrade pip
-   pip install -r requirements.txt
-   ```
-
-4. **Sets up directories**
-   ```bash
-   mkdir -p ~/.config/chat-linux-client
-   mkdir -p ~/.local/share/chat-linux-client/logs
-   ```
-
-5. **Sets permissions**
-   ```bash
-   chmod +x scripts/*.sh
-   ```
-
-### Options
+Options
 
 The script can be customized with environment variables:
 
-```bash
-# Skip Python version check
-SKIP_PYTHON_CHECK=1 ./scripts/install.sh
+[Troubleshooting](Troubleshooting)
 
-# Use custom Python version
-PYTHON_CMD=python3.9 ./scripts/install.sh
+Python version too old
 
-# Install to custom location
-INSTALL_DIR=/custom/path ./scripts/install.sh
-```
+Permission denied
 
-### Troubleshooting
+Dependency installation fails
 
-**Python version too old**
+Run Script
 
-```bash
-# Install newer Python
-sudo apt install python3.9
-```
+Location
 
-**Permission denied**
+scripts/run.sh
 
-```bash
-# Make script executable
-chmod +x scripts/install.sh
-```
-
-**Dependency installation fails**
-
-```bash
-# Update pip first
-pip install --upgrade pip
-```
-
-## Run Script
-
-### Location
-
-`scripts/run.sh`
-
-### Purpose
+Purpose
 
 Simple launcher for the application that:
-- Activates virtual environment
-- Runs the application
-- Handles errors gracefully
+Activates virtual environment
+Runs the application
+Handles errors gracefully
 
-### Usage
+[Usage](Usage)
 
-```bash
-./scripts/run.sh
-```
-
-### What It Does
-
-1. **Activates virtual environment**
-   ```bash
-   source venv/bin/activate
-   ```
-
-2. **Runs the application**
-   ```bash
-   python main.py "$@"
-   ```
-
-3. **Passes arguments**
+What It Does
+Activates virtual environment
+Runs the application
+Passes arguments
    Any command-line arguments are passed to the application:
-   ```bash
-   ./scripts/run.sh --check-system
-   ./scripts/run.sh --help
-   ```
 
-### Options
+Options
 
 Pass arguments to the application:
 
-```bash
-# Run with system checks
-./scripts/run.sh --check-system
-
-# Run in debug mode
-DEBUG=true ./scripts/run.sh
-
-# Run with custom log level
-LOG_LEVEL=DEBUG ./scripts/run.sh
-```
-
-### Creating Desktop Shortcut
+Creating Desktop Shortcut
 
 Create a desktop entry that uses the run script:
 
-```ini
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Chat Linux Client
-Exec=/path/to/chat-linux-client/scripts/run.sh
-Icon=/path/to/chat-linux-client/assets/icon.png
-Terminal=false
-Categories=Utility;
-```
+AppImage Build Script
 
-## AppImage Build Script
+Location
 
-### Location
+scripts/buildappimage.sh
 
-`scripts/build_appimage.sh`
-
-### Purpose
+Purpose
 
 Builds a distributable AppImage package that:
-- Includes all dependencies
-- Works on most Linux distributions
-- Requires no installation
-- Is self-contained
+Includes all dependencies
+Works on most Linux distributions
+Requires no installation
+Is self-contained
 
-### Usage
+[Usage](Usage)
 
-```bash
-./scripts/build_appimage.sh
-```
+What It Does
+Checks dependencies
+AppImage tools
+Python
+Required packages
+Creates build directory
+Copies application files
+Installs dependencies
+Creates AppImage
+Signs AppImage (optional)
 
-### What It Does
-
-1. **Checks dependencies**
-   - AppImage tools
-   - Python
-   - Required packages
-
-2. **Creates build directory**
-   ```bash
-   mkdir -p build
-   cd build
-   ```
-
-3. **Copies application files**
-   ```bash
-   cp -r ../core .
-   cp -r ../ui .
-   cp -r ../storage .
-   cp -r ../utils .
-   cp main.py .
-   cp requirements.txt .
-   ```
-
-4. **Installs dependencies**
-   ```bash
-   pip install --target=./usr/lib/python3.9/site-packages -r requirements.txt
-   ```
-
-5. **Creates AppImage**
-   ```bash
-   appimage-builder --recipe ../packaging/AppImageBuilder.yml
-   ```
-
-6. **Signs AppImage** (optional)
-   ```bash
-   gpg --output Chat-Linux-Client.AppImage.sig --detach-sign Chat-Linux-Client.AppImage
-   ```
-
-### Requirements
+Requirements
 
 The script requires:
-- `appimage-builder`
-- `patchelf`
-- `desktop-file-validate`
-- `zsyncmake`
+appimage-builder
+patchelf
+desktop-file-validate
+zsyncmake
 
 Install on Ubuntu/Debian:
-```bash
-sudo apt install appimage-builder patchelf desktop-file-utils zsyncmake
-```
 
-### Options
+Options
 
-```bash
-# Build specific version
-VERSION=1.0.0 ./scripts/build_appimage.sh
-
-# Skip signing
-SKIP_SIGNING=1 ./scripts/build_appimage.sh
-
-# Custom output directory
-OUTPUT_DIR=/custom/path ./scripts/build_appimage.sh
-```
-
-### Output
+Output
 
 The script produces:
-- `Chat-Linux-Client-VERSION-x86_64.AppImage` - The AppImage file
-- `Chat-Linux-Client-VERSION-x86_64.AppImage.sig` - Signature (if signing enabled)
-- `Chat-Linux-Client-VERSION-x86_64.AppImage.zsync` - Update info (for delta updates)
+Chat-Linux-Client-VERSION-x8664.AppImage - The AppImage file
+Chat-Linux-Client-VERSION-x8664.AppImage.sig - Signature (if signing enabled)
+Chat-Linux-Client-VERSION-x8664.AppImage.zsync - Update info (for delta updates)
 
-### Running the AppImage
+Running the AppImage
 
-```bash
-# Make executable
-chmod +x Chat-Linux-Client-VERSION-x86_64.AppImage
+[Troubleshooting](Troubleshooting)
 
-# Run
-./Chat-Linux-Client-VERSION-x86_64.AppImage
-```
+Missing appimage-builder
 
-### Troubleshooting
+Build fails with dependency errors
 
-**Missing appimage-builder**
+AppImage won't run
 
-```bash
-pip install appimage-builder
-```
+Custom Scripts
 
-**Build fails with dependency errors**
-
-```bash
-# Install system dependencies
-sudo apt install build-essential libssl-dev libffi-dev python3-dev
-```
-
-**AppImage won't run**
-
-```bash
-# Extract to debug
-./Chat-Linux-Client.AppImage --appimage-extract
-./squashfs-root/AppRun
-```
-
-## Custom Scripts
-
-### System Check Script
+System Check Script
 
 Create a custom system check script:
 
-```bash
-#!/bin/bash
-# scripts/check_system.sh
-
-echo "Checking Chat Linux Client system requirements..."
-
-# Check Python
-python3 --version
-if [ $? -ne 0 ]; then
-    echo "Error: Python 3 not found"
-    exit 1
-fi
-
-# Check PyQt6
-python3 -c "import PyQt6" 2>/dev/null
-if [ $? -ne 0 ]; then
-    echo "Error: PyQt6 not installed"
-    exit 1
-fi
-
-# Check Ollama (optional)
-ollama --version 2>/dev/null
-if [ $? -eq 0 ]; then
-    echo "Ollama: Installed"
-else
-    echo "Ollama: Not installed (optional)"
-fi
-
-echo "System check complete!"
-```
-
-### Backup Script
+Backup Script
 
 Create a backup script for configuration and data:
 
-```bash
-#!/bin/bash
-# scripts/backup.sh
-
-BACKUP_DIR="$HOME/chat-linux-client-backup-$(date +%Y%m%d)"
-mkdir -p "$BACKUP_DIR"
-
-# Backup configuration
-cp -r ~/.config/chat-linux-client "$BACKUP_DIR/"
-
-# Backup data
-cp -r ~/.local/share/chat-linux-client "$BACKUP_DIR/"
-
-echo "Backup created at: $BACKUP_DIR"
-```
-
-### Cleanup Script
+Cleanup Script
 
 Create a cleanup script to remove old data:
 
-```bash
-#!/bin/bash
-# scripts/cleanup.sh
+Troubleshooting Scripts
 
-echo "Cleaning up Chat Linux Client data..."
-
-# Clear logs
-rm -rf ~/.local/share/chat-linux-client/logs/*
-
-# Clear old chats (older than 30 days)
-find ~/.local/share/chat-linux-client -name "*.db" -mtime +30 -delete
-
-echo "Cleanup complete!"
-```
-
-## Troubleshooting Scripts
-
-### Script Not Executable
+Script Not Executable
 
 If scripts won't run:
 
-```bash
-chmod +x scripts/*.sh
-```
-
-### Wrong Python Version
+Wrong Python Version
 
 If script complains about Python version:
 
-```bash
-# Check Python version
-python3 --version
-
-# Install newer Python
-sudo apt install python3.9
-
-# Or specify Python in script
-PYTHON_CMD=python3.9 ./scripts/install.sh
-```
-
-### Virtual Environment Issues
+Virtual Environment Issues
 
 If virtual environment has problems:
 
-```bash
-# Remove and recreate
-rm -rf venv
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### Dependency Installation Fails
+Dependency Installation Fails
 
 If dependencies won't install:
 
-```bash
-# Update pip
-pip install --upgrade pip
+Script Best Practices
 
-# Try installing individually
-pip install PyQt6
-pip install aiohttp
-pip install cryptography
-```
+When Writing Custom Scripts
+Use shebang: #!/bin/bash
+Set permissions: chmod +x script.sh
+Check dependencies: Verify required tools
+Handle errors: Use set -e for error handling
+Log actions: Echo what's happening
+Clean up: Remove temporary files
+Use variables: Make scripts configurable
 
-## Script Best Practices
+Example Template
 
-### When Writing Custom Scripts
-
-1. **Use shebang**: `#!/bin/bash`
-2. **Set permissions**: `chmod +x script.sh`
-3. **Check dependencies**: Verify required tools
-4. **Handle errors**: Use `set -e` for error handling
-5. **Log actions**: Echo what's happening
-6. **Clean up**: Remove temporary files
-7. **Use variables**: Make scripts configurable
-
-### Example Template
-
-```bash
-#!/bin/bash
-set -e  # Exit on error
-
-# Configuration
-APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VENV_DIR="$APP_DIR/venv"
-
-# Functions
-log() {
-    echo "[$(date)] $1"
-}
-
-error() {
-    echo "ERROR: $1" >&2
-    exit 1
-}
-
-# Main script
-log "Starting script..."
-# Your code here
-log "Script complete!"
-```
-
-## Next Steps
-
-- [Read Installation guide](Installation)
-- [Read Packaging guide](Packaging)
-- [View script files](https://github.com/yourusername/chat-linux-client/tree/main/scripts)
+Next Steps
+Read Installation guide
+Read Packaging guide
+View script files

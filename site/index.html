@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Linux Client - Privacy-First AI for Linux</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <span>Chat Linux Client</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html#features" class="nav-link">Features</a>
+                <a href="index.html#providers" class="nav-link">Providers</a>
+                <a href="index.html#download" class="nav-link">Download</a>
+                <a href="docs.html" class="nav-link">Docs</a>
+                <a href="https://github.com/AutoBotSolutions/AI-Chat-Linux-Client" class="nav-link github-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-dot"></span>
+                    <span>Open Source • Privacy-First</span>
+                </div>
+                <h1 class="hero-title">
+                    <span class="gradient-text">AI-Powered</span>
+                    <br>
+                    Conversations
+                    <br>
+                    <span class="gradient-text">for Linux</span>
+                </h1>
+                <p class="hero-description">
+                    A privacy-first, multi-provider AI desktop client that unifies multiple AI providers and local models into a single, beautiful conversational interface.
+                </p>
+                <div class="hero-buttons">
+                    <a href="index.html#download" class="btn btn-primary">
+                        <span>Download Now</span>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                    </a>
+                    <a href="https://github.com/AutoBotSolutions/AI-Chat-Linux-Client" class="btn btn-secondary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        <span>Star on GitHub</span>
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-value">5+</div>
+                        <div class="stat-label">AI Providers</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Privacy</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Telemetry</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="window-mockup">
+                    <div class="window-header">
+                        <div class="window-controls">
+                            <div class="control control-close"></div>
+                            <div class="control control-minimize"></div>
+                            <div class="control control-maximize"></div>
+                        </div>
+                        <div class="window-title">Chat Linux Client</div>
+                    </div>
+                    <div class="window-body">
+                        <div class="chat-interface">
+                            <div class="chat-sidebar">
+                                <div class="sidebar-item active">
+                                    <div class="sidebar-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="sidebar-text">New Chat</div>
+                                </div>
+                                <div class="sidebar-item">
+                                    <div class="sidebar-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14 2 14 8 20 8"/>
+                                            <line x1="16" y1="13" x2="8" y2="13"/>
+                                            <line x1="16" y1="17" x2="8" y2="17"/>
+                                            <polyline points="10 9 9 9 8 9"/>
+                                        </svg>
+                                    </div>
+                                    <div class="sidebar-text">Code Help</div>
+                                </div>
+                                <div class="sidebar-item">
+                                    <div class="sidebar-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="sidebar-text">Debug Session</div>
+                                </div>
+                            </div>
+                            <div class="chat-main">
+                                <div class="chat-messages">
+                                    <div class="message message-user">
+                                        <div class="message-avatar">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                                <circle cx="12" cy="7" r="4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="message-content">
+                                            <p>How do I create a Python function to sort a list?</p>
+                                        </div>
+                                    </div>
+                                    <div class="message message-ai">
+                                        <div class="message-avatar">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="11" width="18" height="10" rx="2"/>
+                                                <circle cx="12" cy="5" r="2"/>
+                                                <path d="M12 7v4"/>
+                                                <line x1="8" y1="16" x2="8" y2="16"/>
+                                                <line x1="16" y1="16" x2="16" y2="16"/>
+                                            </svg>
+                                        </div>
+                                        <div class="message-content">
+                                            <p>Here's a simple Python function to sort a list:</p>
+                                            <pre><code>def sort_list(items):
+    return sorted(items)</code></pre>
+                                            <p>You can also sort in-place:</p>
+                                            <pre><code>my_list.sort()</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chat-input">
+                                    <div class="input-placeholder">Type your message...</div>
+                                    <div class="input-send">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="22" y1="2" x2="11" y2="13"/>
+                                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="gradient-text">Powerful Features</span>
+                </h2>
+                <p class="section-description">Everything you need for seamless AI conversations on Linux</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Multi-Provider Support</h3>
+                    <p class="feature-description">Unify OpenAI, Ollama, Groq, HuggingFace, and OpenRouter in one interface</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Privacy-First</h3>
+                    <p class="feature-description">No telemetry, local key storage, optional encryption for chats</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Offline Capability</h3>
+                    <p class="feature-description">Full functionality with local Ollama models, no internet required</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Streaming Responses</h3>
+                    <p class="feature-description">Real-time token-by-token response rendering for instant feedback</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Intelligent Routing</h3>
+                    <p class="feature-description">Automatic model selection based on speed, cost, or quality preferences with health tracking</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M2 12h20"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Extensible</h3>
+                    <p class="feature-description">Plugin system for custom providers and tools</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Model Health</h3>
+                    <p class="feature-description">Automatic health tracking and fallback to healthy models</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Speed Profiles</h3>
+                    <p class="feature-description">Optimized settings for fast responses with different models</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="providers" id="providers">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="gradient-text">Supported Providers</span>
+                </h2>
+                <p class="section-description">Choose from the best AI providers or use local models</p>
+            </div>
+            <div class="providers-grid">
+                <div class="provider-card provider-local">
+                    <div class="provider-badge">Local • Free</div>
+                    <div class="provider-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <h3 class="provider-name">Ollama</h3>
+                    <p class="provider-description">Run AI models locally with complete privacy and no API costs</p>
+                    <div class="provider-models">
+                        <span>Llama3.2</span>
+                        <span>Qwen2.5</span>
+                        <span>Phi3.5</span>
+                        <span>Mistral</span>
+                        <span>CodeLlama</span>
+                    </div>
+                    <div class="provider-features">
+                        <span>✓ Offline</span>
+                        <span>✓ Free</span>
+                        <span>✓ Private</span>
+                    </div>
+                </div>
+                <div class="provider-card">
+                    <div class="provider-badge">Cloud • Fast</div>
+                    <div class="provider-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <h3 class="provider-name">Groq</h3>
+                    <p class="provider-description">Ultra-low latency inference with LPU technology</p>
+                    <div class="provider-models">
+                        <span>Llama3-8B</span>
+                        <span>Mixtral-8x7B</span>
+                        <span>Gemma-7B</span>
+                    </div>
+                    <div class="provider-features">
+                        <span>✓ Fast</span>
+                        <span>✓ Free Tier</span>
+                        <span>✓ Quality</span>
+                    </div>
+                </div>
+                <div class="provider-card">
+                    <div class="provider-badge">Cloud • Open</div>
+                    <div class="provider-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                            <line x1="9" y1="9" x2="9.01" y2="9"/>
+                            <line x1="15" y1="9" x2="15.01" y2="9"/>
+                        </svg>
+                    </div>
+                    <h3 class="provider-name">HuggingFace</h3>
+                    <p class="provider-description">Access thousands of open-source models</p>
+                    <div class="provider-models">
+                        <span>Qwen2.5</span>
+                        <span>Mistral-7B</span>
+                        <span>DeepSeek-R1</span>
+                        <span>DialoGPT</span>
+                    </div>
+                    <div class="provider-features">
+                        <span>✓ Variety</span>
+                        <span>✓ Free Tier</span>
+                        <span>✓ Open Source</span>
+                    </div>
+                </div>
+                <div class="provider-card">
+                    <div class="provider-badge">Cloud • Multi</div>
+                    <div class="provider-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16v16H4z"/>
+                            <path d="M4 12h16"/>
+                            <path d="M12 4v16"/>
+                        </svg>
+                    </div>
+                    <h3 class="provider-name">OpenRouter</h3>
+                    <p class="provider-description">Access multiple models from various providers</p>
+                    <div class="provider-models">
+                        <span>GPT-4</span>
+                        <span>Claude-3</span>
+                        <span>GPT-3.5</span>
+                    </div>
+                    <div class="provider-features">
+                        <span>✓ Variety</span>
+                        <span>✓ Flexible</span>
+                        <span>✓ Premium</span>
+                    </div>
+                </div>
+                <div class="provider-card">
+                    <div class="provider-badge">Cloud • Premium</div>
+                    <div class="provider-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+                            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+                        </svg>
+                    </div>
+                    <h3 class="provider-name">OpenAI</h3>
+                    <p class="provider-description">State-of-the-art GPT models with excellent quality</p>
+                    <div class="provider-models">
+                        <span>GPT-4o</span>
+                        <span>GPT-4-Turbo</span>
+                        <span>GPT-3.5</span>
+                    </div>
+                    <div class="provider-features">
+                        <span>✓ Quality</span>
+                        <span>✓ Reliable</span>
+                        <span>✓ GPT-4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="download" id="download">
+        <div class="container">
+            <div class="download-content">
+                <div class="download-text">
+                    <h2 class="section-title">
+                        <span class="gradient-text">Get Started Today</span>
+                    </h2>
+                    <p class="section-description">Download Chat Linux Client and start having private AI conversations</p>
+                    <div class="download-options">
+                        <a href="index.html#" class="download-option">
+                            <div class="download-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                            </div>
+                            <div class="download-info">
+                                <div class="download-title">AppImage</div>
+                                <div class="download-subtitle">Universal Linux Package</div>
+                            </div>
+                            <div class="download-arrow">→</div>
+                        </a>
+                        <a href="index.html#" class="download-option">
+                            <div class="download-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                                </svg>
+                            </div>
+                            <div class="download-info">
+                                <div class="download-title">Source Code</div>
+                                <div class="download-subtitle">Build from source</div>
+                            </div>
+                            <div class="download-arrow">→</div>
+                        </a>
+                    </div>
+                    <div class="install-command">
+                        <div class="command-label">Quick install with script:</div>
+                        <div class="command-box">
+                            <code>git clone https://github.com/AutoBotSolutions/AI-Chat-Linux-Client.git && cd chat-linux-client && ./scripts/install.sh</code>
+                            <button class="copy-btn" onclick="copyCommand(this)">Copy</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="download-visual">
+                    <div class="terminal-mockup">
+                        <div class="terminal-header">
+                            <div class="terminal-controls">
+                                <div class="control control-close"></div>
+                                <div class="control control-minimize"></div>
+                                <div class="control control-maximize"></div>
+                            </div>
+                            <div class="terminal-title">Terminal</div>
+                        </div>
+                        <div class="terminal-body">
+                            <div class="terminal-line">
+                                <span class="terminal-prompt">$</span>
+                                <span class="terminal-command">./scripts/install.sh</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="terminal-output">✓ Python 3.9 detected</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="terminal-output">✓ Creating virtual environment...</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="terminal-output">✓ Installing dependencies...</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="terminal-output">✓ Installation complete!</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="terminal-prompt">$</span>
+                                <span class="terminal-cursor">█</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Experience Private AI?</h2>
+                <p class="cta-description">Join thousands of Linux users enjoying privacy-first AI conversations</p>
+                <a href="https://github.com/AutoBotSolutions/AI-Chat-Linux-Client" class="btn btn-primary btn-large">
+                    <span>Get Started Free</span>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </div>
+                        <span>Chat Linux Client</span>
+                    </div>
+                    <p class="footer-description">Privacy-first AI for Linux</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Product</h4>
+                    <a href="index.html#features" class="footer-link">Features</a>
+                    <a href="index.html#providers" class="footer-link">Providers</a>
+                    <a href="index.html#download" class="footer-link">Download</a>
+                    <a href="docs.html" class="footer-link">Documentation</a>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Resources</h4>
+                    <a href="https://github.com/AutoBotSolutions/AI-Chat-Linux-Client/wiki" class="footer-link">Wiki</a>
+                    <a href="https://github.com/AutoBotSolutions/AI-Chat-Linux-Client/issues" class="footer-link">Issues</a>
+                    <a href="https://github.com/AutoBotSolutions/AI-Chat-Linux-Client" class="footer-link">GitHub</a>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">License</h4>
+                    <p class="footer-license">MIT License</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Chat Linux Client. Open source under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

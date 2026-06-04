@@ -1,452 +1,264 @@
-# Architecture
+[Architecture](Architecture)
 
 This document describes the system architecture and design of Chat Linux Client.
 
-## Table of Contents
+Table of Contents
+Overview
+System Architecture
+Component Architecture
+Data Flow
+Provider Architecture
+Storage Architecture
+Security Architecture
+Extension Points
 
-- [Overview](#overview)
-- [System Architecture](#system-architecture)
-- [Component Architecture](#component-architecture)
-- [Data Flow](#data-flow)
-- [Provider Architecture](#provider-architecture)
-- [Storage Architecture](#storage-architecture)
-- [Security Architecture](#security-architecture)
-- [Extension Points](#extension-points)
-
-## Overview
+Overview
 
 Chat Linux Client follows a modular, layered architecture with clear separation of concerns:
 
-```
-┌─────────────────────────────────────────┐
-│           UI Layer (PyQt6)              │
-│  ┌──────────┐  ┌──────────┐  ┌────────┐ │
-│  │ Main     │  │ Settings │  │ Other  │ │
-│  │ Window   │  │ Dialog   │  │ UI     │ │
-│  └──────────┘  └──────────┘  └────────┘ │
-└─────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────┐
-│         Routing Layer                   │
-│  ┌──────────────────────────────────┐  │
-│  │     Provider Router              │  │
-│  │  - Model Selection               │  │
-│  │  - Request Routing               │  │
-│  │  - Fallback Logic                │  │
-│  └──────────────────────────────────┘  │
-└─────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────┐
-│        Provider Layer                   │
-│  ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐  │
-│  │API │ │Oll│ │Groq│ │HF  │ │OR  │  │
-│  │    │ │ama │ │    │ │    │ │    │  │
-│  └────┘ └────┘ └────┘ └────┘ └────┘  │
-└─────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────┐
-│         Storage Layer                   │
-│  ┌──────────┐  ┌──────────┐           │
-│  │ Config   │  │ History  │           │
-│  │ Manager  │  │ Manager  │           │
-│  └──────────┘  └──────────┘           │
-└─────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────┐
-│         Utility Layer                   │
-│  ┌──────────┐ ┌──────────┐ ┌────────┐ │
-│  │Markdown  │ │Key       │ │System  │ │
-│  │Renderer  │ │Handler   │ │Checks  │ │
-│  └──────────┘ └──────────┘ └────────┘ │
-└─────────────────────────────────────────┘
-```
+System Architecture
 
-## System Architecture
-
-### Layered Design
+Layered Design
 
 The system is organized into five distinct layers:
+UI Layer: PyQt6-based desktop interface
+Routing Layer: Intelligent model selection and request routing
+Provider Layer: Multiple AI provider implementations
+Storage Layer: Persistent configuration and chat history
+Utility Layer: Helper functions and system integration
 
-1. **UI Layer**: PyQt6-based desktop interface
-2. **Routing Layer**: Intelligent model selection and request routing
-3. **Provider Layer**: Multiple AI provider implementations
-4. **Storage Layer**: Persistent configuration and chat history
-5. **Utility Layer**: Helper functions and system integration
+Design Principles
+Separation of Concerns: Each layer has a distinct responsibility
+Dependency Injection: Components receive dependencies through constructors
+Interface-Based Design: Providers implement common interfaces
+Async/Await: I/O operations use async for performance
+Error-First: Errors are handled gracefully with fallbacks
 
-### Design Principles
+Component Architecture
 
-- **Separation of Concerns**: Each layer has a distinct responsibility
-- **Dependency Injection**: Components receive dependencies through constructors
-- **Interface-Based Design**: Providers implement common interfaces
-- **Async/Await**: I/O operations use async for performance
-- **Error-First**: Errors are handled gracefully with fallbacks
+UI Layer (ui/)
 
-## Component Architecture
+Main Window (mainwindow.py)
+Manages the primary application window
+Handles user interactions
+Coordinates between UI and backend
+Manages chat sessions
 
-### UI Layer (`ui/`)
+Settings Dialog (settingsdialog.py)
+Configuration interface
+API key management
+Provider settings
+Privacy settings
 
-**Main Window** (`main_window.py`)
-- Manages the primary application window
-- Handles user interactions
-- Coordinates between UI and backend
-- Manages chat sessions
+Routing Layer (core/providerrouter.py)
 
-**Settings Dialog** (`settings_dialog.py`)
-- Configuration interface
-- API key management
-- Provider settings
-- Privacy settings
+Provider Router
+Selects appropriate provider based on strategy
+Manages provider availability
+Implements fallback logic
+Handles request routing
 
-### Routing Layer (`core/provider_router.py`)
+Routing Strategies
+OFFLINEFIRST: Prefer local models
+SPEEDOPTIMAL: Prefer fast models
+COSTOPTIMAL: Prefer free options
+QUALITYOPTIMAL: Prefer capable models
 
-**Provider Router**
-- Selects appropriate provider based on strategy
-- Manages provider availability
-- Implements fallback logic
-- Handles request routing
+Provider Layer (core/)
 
-**Routing Strategies**
-- `OFFLINE_FIRST`: Prefer local models
-- `SPEED_OPTIMAL`: Prefer fast models
-- `COST_OPTIMAL`: Prefer free options
-- `QUALITY_OPTIMAL`: Prefer capable models
+Base API Client (apiclient.py)
+Abstract base class for all providers
+Defines common interface
+Implements shared functionality
 
-### Provider Layer (`core/`)
+Provider Implementations
+ollamaclient.py: Local Ollama models
+groqclient.py: Groq API
+huggingfaceclient.py: HuggingFace API
+openrouterclient.py: OpenRouter API
+openaiclient.py: OpenAI API
 
-**Base API Client** (`api_client.py`)
-- Abstract base class for all providers
-- Defines common interface
-- Implements shared functionality
+Model Manager (modelmanager.py)
+Manages model information
+Provides model selection logic
+Handles model metadata
 
-**Provider Implementations**
-- `ollama_client.py`: Local Ollama models
-- `groq_client.py`: Groq API
-- `huggingface_client.py`: HuggingFace API
-- `openrouter_client.py`: OpenRouter API
-- `openai_client.py`: OpenAI API
+Storage Layer (storage/)
 
-**Model Manager** (`model_manager.py`)
-- Manages model information
-- Provides model selection logic
-- Handles model metadata
+Config Manager (configmanager.py)
+Manages application configuration
+Handles provider settings
+Supports encryption
+Persists to JSON
 
-### Storage Layer (`storage/`)
+History Manager (historymanager.py)
+Manages chat history
+SQLite database storage
+Export functionality
+Search capabilities
 
-**Config Manager** (`config_manager.py`)
-- Manages application configuration
-- Handles provider settings
-- Supports encryption
-- Persists to JSON
+Utility Layer (utils/)
 
-**History Manager** (`history_manager.py`)
-- Manages chat history
-- SQLite database storage
-- Export functionality
-- Search capabilities
+Markdown Renderer (markdownrenderer.py)
+Converts Markdown to HTML
+Syntax highlighting for code
+Sanitizes output
 
-### Utility Layer (`utils/`)
+Key Handler (keyhandler.py)
+Secure API key storage
+Encryption/decryption
+Key validation
+Password management
 
-**Markdown Renderer** (`markdown_renderer.py`)
-- Converts Markdown to HTML
-- Syntax highlighting for code
-- Sanitizes output
+System Checks (systemchecks.py)
+Validates system requirements
+Checks dependencies
+Verifies resources
 
-**Key Handler** (`key_handler.py`)
-- Secure API key storage
-- Encryption/decryption
-- Key validation
-- Password management
+Data Flow
 
-**System Checks** (`system_checks.py`)
-- Validates system requirements
-- Checks dependencies
-- Verifies resources
+Chat Request Flow
 
-## Data Flow
+Configuration Flow
 
-### Chat Request Flow
+History Flow
 
-```
-User Input
-    ↓
-UI Layer (main_window.py)
-    ↓
-Chat Worker (async task)
-    ↓
-Provider Router (selects provider)
-    ↓
-Provider Client (API call)
-    ↓
-API Response
-    ↓
-Markdown Renderer (formatting)
-    ↓
-UI Layer (display)
-```
+Provider Architecture
 
-### Configuration Flow
+Provider Interface
 
-```
-Settings Dialog
-    ↓
-Config Manager
-    ↓
-Encryption (if enabled)
-    ↓
-File System (config.json)
-```
+All providers implement the APIClient interface:
 
-### History Flow
+Provider Lifecycle
+Initialization: Provider created with API key and base URL
+Availability Check: Router tests provider connection
+Model Registration: Provider registers available models
+Request Handling: Provider handles chat requests
+Streaming: Provider streams responses if supported
+Error Handling: Provider handles errors gracefully
 
-```
-Chat Message
-    ↓
-History Manager
-    ↓
-SQLite Database
-    ↓
-Query/Search
-    ↓
-Display/Export
-```
-
-## Provider Architecture
-
-### Provider Interface
-
-All providers implement the `APIClient` interface:
-
-```python
-class APIClient(ABC):
-    @abstractmethod
-    async def chat_completion(self, messages, model, temperature, max_tokens):
-        """Generate a chat completion."""
-        pass
-        
-    @abstractmethod
-    async def chat_completion_stream(self, messages, model, temperature, max_tokens):
-        """Generate a streaming chat completion."""
-        pass
-        
-    @abstractmethod
-    async def test_connection(self):
-        """Test API connectivity."""
-        pass
-```
-
-### Provider Lifecycle
-
-1. **Initialization**: Provider created with API key and base URL
-2. **Availability Check**: Router tests provider connection
-3. **Model Registration**: Provider registers available models
-4. **Request Handling**: Provider handles chat requests
-5. **Streaming**: Provider streams responses if supported
-6. **Error Handling**: Provider handles errors gracefully
-
-### Streaming Implementation
+Streaming Implementation
 
 Providers use Server-Sent Events (SSE) for streaming:
 
-```python
-async def chat_completion_stream(self, messages, model, temperature, max_tokens):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=headers, json=payload) as response:
-            async for line in response.content:
-                if line.startswith(b"data: "):
-                    data = json.loads(line[6:])
-                    if data.get("choices"):
-                        yield data["choices"][0]["delta"].get("content", "")
-```
+Storage Architecture
 
-## Storage Architecture
+Configuration Storage
 
-### Configuration Storage
+Location: ~/.config/chat-linux-client/config.json
 
-**Location**: `~/.config/chat-linux-client/config.json`
+Structure:
 
-**Structure**:
-```json
-{
-  "providers": {
-    "provider_name": {
-      "enabled": true,
-      "api_key": "encrypted_key",
-      "base_url": "https://api.example.com"
-    }
-  },
-  "chat": {
-    "temperature": 0.7,
-    "max_tokens": null,
-    "routing_strategy": "offline_first"
-  },
-  "privacy": {
-    "encrypt_chats": false,
-    "delete_api_keys_on_exit": false
-  }
-}
-```
+History Storage
 
-### History Storage
+Location: ~/.local/share/chat-linux-client/chathistory.db
 
-**Location**: `~/.local/share/chat-linux-client/chat_history.db`
+Schema:
 
-**Schema**:
-```sql
-CREATE TABLE chats (
-    id INTEGER PRIMARY KEY,
-    title TEXT,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-);
+Key Storage
 
-CREATE TABLE messages (
-    id INTEGER PRIMARY KEY,
-    chat_id INTEGER,
-    role TEXT,
-    content TEXT,
-    timestamp TIMESTAMP,
-    FOREIGN KEY (chat_id) REFERENCES chats(id)
-);
-```
+Location: ~/.config/chat-linux-client/apikeys.enc
 
-### Key Storage
+Encryption: Fernet symmetric encryption
 
-**Location**: `~/.config/chat-linux-client/api_keys.enc`
+Key Derivation: PBKDF2 with SHA-256
 
-**Encryption**: Fernet symmetric encryption
+Security Architecture
 
-**Key Derivation**: PBKDF2 with SHA-256
+API Key Security
+Encryption: Keys encrypted at rest using Fernet
+Memory: Keys kept in memory only when needed
+Transmission: HTTPS for all API calls
+Validation: Key format validation before use
 
-## Security Architecture
+Chat History Security
+Optional Encryption: Chat history can be encrypted
+Local Storage: Data stored locally, not in cloud
+Access Control: File system permissions protect data
+No Telemetry: No data collection or analytics
 
-### API Key Security
+Network Security
+HTTPS Only: All API communications use HTTPS
+Certificate Validation: SSL certificate validation enabled
+No Proxy: No intermediate proxy servers
+Direct Connection: Direct connection to provider APIs
 
-- **Encryption**: Keys encrypted at rest using Fernet
-- **Memory**: Keys kept in memory only when needed
-- **Transmission**: HTTPS for all API calls
-- **Validation**: Key format validation before use
+Extension Points
 
-### Chat History Security
+Adding New Providers
+Implement APIClient interface
+Add provider configuration to settings.py
+Register in providerrouter.py
+Add model information to modelmanager.py
+Add tests and documentation
 
-- **Optional Encryption**: Chat history can be encrypted
-- **Local Storage**: Data stored locally, not in cloud
-- **Access Control**: File system permissions protect data
-- **No Telemetry**: No data collection or analytics
+Adding New Routing Strategies
+Define strategy in providerrouter.py
+Implement selection logic
+Add to strategy enum
+Update UI to include option
+Add tests
 
-### Network Security
+Adding New Storage Backends
+Implement storage interface
+Add configuration option
+Update configmanager.py or historymanager.py
+Handle migration if needed
+Add tests
 
-- **HTTPS Only**: All API communications use HTTPS
-- **Certificate Validation**: SSL certificate validation enabled
-- **No Proxy**: No intermediate proxy servers
-- **Direct Connection**: Direct connection to provider APIs
+Adding New UI Components
+Create component in ui/
+Integrate with main window
+Add to settings if configurable
+Add styling to dark.qss
+Test with pytest-qt
 
-## Extension Points
+Performance Considerations
 
-### Adding New Providers
-
-1. Implement `APIClient` interface
-2. Add provider configuration to `settings.py`
-3. Register in `provider_router.py`
-4. Add model information to `model_manager.py`
-5. Add tests and documentation
-
-### Adding New Routing Strategies
-
-1. Define strategy in `provider_router.py`
-2. Implement selection logic
-3. Add to strategy enum
-4. Update UI to include option
-5. Add tests
-
-### Adding New Storage Backends
-
-1. Implement storage interface
-2. Add configuration option
-3. Update `config_manager.py` or `history_manager.py`
-4. Handle migration if needed
-5. Add tests
-
-### Adding New UI Components
-
-1. Create component in `ui/`
-2. Integrate with main window
-3. Add to settings if configurable
-4. Add styling to `dark.qss`
-5. Test with pytest-qt
-
-## Performance Considerations
-
-### Async/Await
+Async/Await
 
 All I/O operations use async/await for non-blocking execution:
 
-```python
-async def generate_response(self, prompt):
-    response = await self.client.chat_completion(prompt)
-    return response
-```
-
-### Connection Pooling
+Connection Pooling
 
 HTTP clients use connection pooling for efficiency:
 
-```python
-self.session = aiohttp.ClientSession(
-    connector=aiohttp.TCPConnector(limit=10)
-)
-```
-
-### Caching
+Caching
 
 Model information is cached to reduce API calls:
 
-```python
-@lru_cache(maxsize=128)
-def get_model_info(self, provider, model):
-    return self._fetch_model_info(provider, model)
-```
-
-### Lazy Loading
+Lazy Loading
 
 Providers are loaded only when needed:
 
-```python
-if provider_config.get("enabled"):
-    provider = self._create_provider(provider_config)
-```
+Technology Stack
+GUI Framework: PyQt6
+HTTP Client: aiohttp
+Database: SQLite (built-in)
+Encryption: cryptography (Fernet)
+Markdown: markdown-it-py
+Testing: pytest, pytest-qt
+Code Quality: black, flake8, mypy
 
-## Technology Stack
+Design Patterns Used
+Strategy Pattern: Routing strategies
+Factory Pattern: Provider creation
+Observer Pattern: UI updates
+Singleton Pattern: Configuration manager
+Template Method: API client base class
+Adapter Pattern: Provider adapters
 
-- **GUI Framework**: PyQt6
-- **HTTP Client**: aiohttp
-- **Database**: SQLite (built-in)
-- **Encryption**: cryptography (Fernet)
-- **Markdown**: markdown-it-py
-- **Testing**: pytest, pytest-qt
-- **Code Quality**: black, flake8, mypy
+Future Enhancements
+Plugin system for custom providers
+Multi-window support
+Voice interface
+RAG knowledge system
+Agent-based task automation
+System tray mode
+Custom themes
+Mobile version
 
-## Design Patterns Used
-
-- **Strategy Pattern**: Routing strategies
-- **Factory Pattern**: Provider creation
-- **Observer Pattern**: UI updates
-- **Singleton Pattern**: Configuration manager
-- **Template Method**: API client base class
-- **Adapter Pattern**: Provider adapters
-
-## Future Enhancements
-
-- Plugin system for custom providers
-- Multi-window support
-- Voice interface
-- RAG knowledge system
-- Agent-based task automation
-- System tray mode
-- Custom themes
-- Mobile version
-
-## Next Steps
-
-- [Read Development guide](Development)
-- [Read API Providers guide](API-Providers)
-- [Review the codebase](https://github.com/yourusername/chat-linux-client)
+Next Steps
+Read Development guide
+Read API Providers guide
+Review the codebase
