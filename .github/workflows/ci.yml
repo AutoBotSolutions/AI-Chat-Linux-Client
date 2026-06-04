@@ -78,7 +78,7 @@ jobs:
         ./scripts/build_appimage.sh
 
     - name: Upload AppImage artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: chat-linux-client-appimage
         path: build/Chat-Linux-Client*.AppImage
