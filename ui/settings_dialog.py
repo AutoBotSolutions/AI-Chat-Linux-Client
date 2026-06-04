@@ -232,7 +232,7 @@ class SettingsDialog(QDialog):
             self.key_handler: Union[KeyHandler, NoopKeyHandler] = KeyHandler()
         except Exception as e:
             self.logger.error(f"Failed to initialize secure key storage in settings dialog: {e}")
-            self.key_handler: Union[KeyHandler, NoopKeyHandler] = NoopKeyHandler()
+            self.key_handler = NoopKeyHandler()
         self.default_tab = default_tab
         
         self.setWindowTitle("Chat Linux Client - Settings")

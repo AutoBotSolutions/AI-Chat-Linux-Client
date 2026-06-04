@@ -228,7 +228,10 @@ class SettingsManager:
         """Reset all settings to defaults."""
         # Create a new instance and copy its state
         temp_settings = SettingsManager(str(self.config_dir))
-        self.config = temp_settings.config
+        self.providers = temp_settings.providers
+        self.ui = temp_settings.ui
+        self.chat = temp_settings.chat
+        self.privacy = temp_settings.privacy
         self.config_dir = temp_settings.config_dir
         self.save()
     
