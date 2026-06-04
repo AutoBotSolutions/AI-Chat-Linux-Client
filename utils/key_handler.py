@@ -355,7 +355,7 @@ class KeyHandler:
         validator = formats.get(provider.lower(), lambda k: len(k) >= 10)
         return validator(api_key)
     
-    def get_key_info(self) -> Dict[str, any]:
+    def get_key_info(self) -> Dict[str, Any]:
         """Get information about stored keys."""
         if not self._fernet:
             if not self.initialize_encryption():

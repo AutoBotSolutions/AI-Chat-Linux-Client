@@ -3,7 +3,7 @@ Settings dialog for configuring API keys and provider settings.
 """
 
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
     QLineEdit, QPushButton, QTabWidget, QWidget,
@@ -229,10 +229,10 @@ class SettingsDialog(QDialog):
         self.settings_manager = settings_manager
         self.logger = logging.getLogger(__name__)
         try:
-            self.key_handler = KeyHandler()
+            self.key_handler: Union[KeyHandler, NoopKeyHandler] = KeyHandler()
         except Exception as e:
             self.logger.error(f"Failed to initialize secure key storage in settings dialog: {e}")
-            self.key_handler = NoopKeyHandler()
+            self.key_handler: Union[KeyHandler, NoopKeyHandler] = NoopKeyHandler()
         self.default_tab = default_tab
         
         self.setWindowTitle("Chat Linux Client - Settings")

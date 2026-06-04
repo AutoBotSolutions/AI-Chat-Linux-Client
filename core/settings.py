@@ -226,7 +226,11 @@ class SettingsManager:
     
     def reset_to_defaults(self) -> None:
         """Reset all settings to defaults."""
-        self.__init__(str(self.config_dir))
+        # Create a new instance and copy its state
+        temp_settings = SettingsManager(str(self.config_dir))
+        self.config = temp_settings.config
+        self.config_dir = temp_settings.config_dir
+        self.save()
     
     def export_config(self, file_path: str) -> bool:
         """Export configuration to a file."""

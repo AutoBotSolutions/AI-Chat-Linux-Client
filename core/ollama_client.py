@@ -79,7 +79,7 @@ class OllamaClient(BaseAPIClient):
         max_tokens: Optional[int] = None
     ):
         """Handle streaming chat completion."""
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "messages": messages,
             "stream": True,
@@ -122,7 +122,7 @@ class OllamaClient(BaseAPIClient):
         max_tokens: Optional[int] = None
     ):
         """Handle non-streaming chat completion."""
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "messages": messages,
             "stream": False,
@@ -186,7 +186,7 @@ class OllamaClient(BaseAPIClient):
     ) -> str:
         """Fallback path for models that respond better on /api/generate."""
         prompt = self._messages_to_prompt(messages)
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "prompt": prompt,
             "stream": False,
