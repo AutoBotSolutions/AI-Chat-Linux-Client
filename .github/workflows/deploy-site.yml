@@ -1,0 +1,60 @@
+name: Deploy Site to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'site/**' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+
+    - name: Build static site
+      run: |
+        # Ensure site directory exists and has proper structure
+        ls -la site/
+        
+        # Validate HTML files
+        find site/ -name "*.html" -exec echo "Validating {}" \;
+        
+        # Create .nojekyll if it doesn't exist
+        touch site/.nojekyll
+        
+        # Copy site files to build directory
+        mkdir -p _site
+        cp -r site/* _site/
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: ./_site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2
