@@ -428,24 +428,26 @@ class ProviderRouter:
         
         # Handle streaming by yielding chunks
         if stream:
-            async for chunk in provider.chat_completion(
+            chat_stream = provider.chat_completion(
                 messages=messages,
                 model=actual_model,
                 stream=stream,
                 temperature=temperature,
                 max_tokens=max_tokens
-            ):
+            )
+            async for chunk in chat_stream:
                 yield chunk
         else:
             # For non-streaming, collect all chunks and yield the complete response
             response = ""
-            async for chunk in provider.chat_completion(
+            chat_stream = provider.chat_completion(
                 messages=messages,
                 model=actual_model,
                 stream=stream,
                 temperature=temperature,
                 max_tokens=max_tokens
-            ):
+            )
+            async for chunk in chat_stream:
                 response += chunk
             yield response
     

@@ -18,7 +18,7 @@ class OpenAIClient(BaseAPIClient):
         self.base_url = base_url.rstrip('/')
         self.logger = logging.getLogger(__name__)
         self.is_available = False
-        self.models_cache = []
+        self.models_cache: List[str] = []
     
     async def test_connection(self) -> bool:
         """Test if OpenAI API is accessible."""
@@ -37,7 +37,7 @@ class OpenAIClient(BaseAPIClient):
                 async with session.get(
                     f"{self.base_url}/models",
                     headers=headers,
-                    timeout=10
+                    timeout=aiohttp.ClientTimeout(total=10)
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
@@ -112,7 +112,7 @@ class OpenAIClient(BaseAPIClient):
                     f"{self.base_url}/chat/completions",
                     headers=headers,
                     json=payload,
-                    timeout=60
+                    timeout=aiohttp.ClientTimeout(total=60)
                 ) as response:
                     if response.status == 200:
                         if stream:

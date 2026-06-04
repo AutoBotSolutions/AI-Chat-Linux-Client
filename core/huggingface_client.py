@@ -34,7 +34,7 @@ class HuggingFaceClient(BaseAPIClient):
                 async with session.get(
                     f"{self.base_url}/models/{test_model}", 
                     headers=self.headers, 
-                    timeout=10
+                    timeout=aiohttp.ClientTimeout(total=10)
                 ) as response:
                     self.is_available = response.status == 200
                     if self.is_available:
@@ -107,7 +107,7 @@ class HuggingFaceClient(BaseAPIClient):
                     f"{self.base_url}/models/{model}", 
                     headers=self.headers, 
                     json=payload,
-                    timeout=60
+                    timeout=aiohttp.ClientTimeout(total=60)
                 ) as response:
                     if response.status == 200:
                         data = await response.json()

@@ -29,7 +29,7 @@ class OpenRouterClient(BaseAPIClient):
                 async with session.get(
                     f"{self.base_url}/models", 
                     headers=self.headers, 
-                    timeout=5
+                    timeout=aiohttp.ClientTimeout(total=5)
                 ) as response:
                     self.is_available = response.status == 200
                     if self.is_available:
@@ -90,7 +90,7 @@ class OpenRouterClient(BaseAPIClient):
                     f"{self.base_url}/chat/completions", 
                     headers=self.headers, 
                     json=payload,
-                    timeout=60
+                    timeout=aiohttp.ClientTimeout(total=60)
                 ) as response:
                     if response.status == 200:
                         if stream:

@@ -1461,7 +1461,7 @@ class ChatWindow(QMainWindow):
         if char_budget <= 0:
             return messages[-2:]
         total = 0
-        selected = []
+        selected: List[Dict[str, Any]] = []
         for msg in reversed(messages):
             content = str(msg.get("content", ""))
             size = len(content)

@@ -7,7 +7,7 @@ import sys
 import subprocess
 import platform
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from pathlib import Path
 import aiohttp
 import asyncio
@@ -33,7 +33,7 @@ class SystemChecker:
             "python_executable": sys.executable
         }
     
-    async def check_all_systems(self) -> Dict[str, any]:
+    async def check_all_systems(self) -> Dict[str, Any]:
         """Perform comprehensive system checks."""
         results = {
             "system_info": self.system_info,
@@ -47,9 +47,9 @@ class SystemChecker:
         
         return results
     
-    def check_python_environment(self) -> Dict[str, any]:
+    def check_python_environment(self) -> Dict[str, Any]:
         """Check Python environment and packages."""
-        checks = {
+        checks: Dict[str, Any] = {
             "python_version_ok": sys.version_info >= (3, 8),
             "python_version": sys.version,
             "site_packages": [],
@@ -79,9 +79,9 @@ class SystemChecker:
         
         return checks
     
-    async def check_network_connectivity(self) -> Dict[str, any]:
+    async def check_network_connectivity(self) -> Dict[str, Any]:
         """Check basic network connectivity."""
-        checks = {
+        checks: Dict[str, Any] = {
             "internet_available": False,
             "dns_resolution": {},
             "connection_errors": []
@@ -115,9 +115,9 @@ class SystemChecker:
         
         return checks
     
-    async def check_provider_connectivity(self) -> Dict[str, any]:
+    async def check_provider_connectivity(self) -> Dict[str, Any]:
         """Check connectivity to AI providers."""
-        checks = {
+        checks: Dict[str, Any] = {
             "ollama": {"available": False, "error": None},
             "groq": {"available": False, "error": None},
             "huggingface": {"available": False, "error": None},
@@ -158,9 +158,9 @@ class SystemChecker:
         
         return checks
     
-    def check_file_system(self) -> Dict[str, any]:
+    def check_file_system(self) -> Dict[str, Any]:
         """Check file system permissions and space."""
-        checks = {
+        checks: Dict[str, Any] = {
             "config_dir_accessible": False,
             "data_dir_accessible": False,
             "temp_dir_accessible": False,
@@ -221,9 +221,9 @@ class SystemChecker:
         
         return checks
     
-    def check_dependencies(self) -> Dict[str, any]:
+    def check_dependencies(self) -> Dict[str, Any]:
         """Check external dependencies and tools."""
-        checks = {
+        checks: Dict[str, Any] = {
             "git_available": False,
             "curl_available": False,
             "wget_available": False,
@@ -249,9 +249,9 @@ class SystemChecker:
         
         return checks
     
-    async def check_system_performance(self) -> Dict[str, any]:
+    async def check_system_performance(self) -> Dict[str, Any]:
         """Check system performance metrics."""
-        checks = {
+        checks: Dict[str, Any] = {
             "cpu_usage": 0,
             "memory_usage": 0,
             "disk_io": {},
@@ -302,9 +302,9 @@ class SystemChecker:
         
         return checks
     
-    def check_display_server(self) -> Dict[str, any]:
+    def check_display_server(self) -> Dict[str, Any]:
         """Check display server and GUI environment."""
-        checks = {
+        checks: Dict[str, Any] = {
             "display_available": False,
             "display_server": "unknown",
             "wayland": False,
@@ -366,7 +366,7 @@ class SystemChecker:
         
         return "\n".join(report_lines)
     
-    def get_recommendations(self, check_results: Dict[str, any]) -> List[str]:
+    def get_recommendations(self, check_results: Dict[str, Any]) -> List[str]:
         """Get system recommendations based on check results."""
         recommendations = []
         

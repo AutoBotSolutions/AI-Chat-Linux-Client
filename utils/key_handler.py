@@ -6,7 +6,7 @@ import os
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any, Union
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -29,10 +29,10 @@ class KeyHandler:
         self.config_dir.mkdir(parents=True, exist_ok=True)
         
         # Initialize encryption
-        self._master_key = None
-        self._fernet = None
+        self._master_key: Optional[bytes] = None
+        self._fernet: Optional[Fernet] = None
         self._salt = self._load_or_create_salt()
-        self._keys_cache = None
+        self._keys_cache: Optional[Dict[str, str]] = None
         self._key_store_status = "uninitialized"
     
     def _get_default_config_dir(self) -> str:
@@ -181,6 +181,11 @@ class KeyHandler:
                 self._key_store_status = "missing-file"
                 return {}
 
+            if self._fernet is None:
+                self.logger.error("Fernet not initialized")
+                self._key_store_status = "not-initialized"
+                return {}
+
             with open(self.keys_file, 'rb') as f:
                 encrypted_data = f.read()
 
@@ -217,6 +222,10 @@ class KeyHandler:
     
     def _save_keys(self, keys: Dict[str, str]) -> None:
         """Save encrypted keys to file."""
+        if self._fernet is None:
+            self.logger.error("Fernet not initialized, cannot save keys")
+            raise RuntimeError("Encryption not initialized")
+        
         try:
             keys_json = json.dumps(keys, ensure_ascii=False)
             encrypted_data = self._fernet.encrypt(keys_json.encode('utf-8'))

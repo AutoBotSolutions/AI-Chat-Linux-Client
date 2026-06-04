@@ -3,7 +3,7 @@ Base API client interface for all AI providers.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import json
 
 
@@ -42,7 +42,7 @@ class BaseAPIClient(ABC):
         """Get the provider name."""
         pass
     
-    def get_model_info(self, model: str) -> Dict[str, any]:
+    def get_model_info(self, model: str) -> Dict[str, Any]:
         """Get information about a specific model."""
         return {
             "name": model,

@@ -29,9 +29,9 @@ class ConfigManager:
         self.config_dir.mkdir(parents=True, exist_ok=True)
         
         # Initialize configuration
-        self.config = {}
-        self._encryption_key = None
-        self._fernet = None
+        self.config: Dict[str, Any] = {}
+        self._encryption_key: Optional[bytes] = None
+        self._fernet: Optional[Fernet] = None
         
         # Load configuration
         self.load()
@@ -166,6 +166,11 @@ class ConfigManager:
         """Load configuration from encrypted file."""
         try:
             if self.encrypted_config_file.exists():
+                if self._fernet is None:
+                    self.logger.error("Fernet not initialized")
+                    self.config = {}
+                    return
+                    
                 with open(self.encrypted_config_file, 'rb') as f:
                     encrypted_data = f.read()
                 

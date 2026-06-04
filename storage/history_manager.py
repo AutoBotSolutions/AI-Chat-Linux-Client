@@ -376,6 +376,11 @@ class HistoryManager:
                     lines.append("")
                 
                 return "\n".join(lines)
+            
+            else:
+                # Unsupported format
+                self.logger.warning(f"Unsupported export format: {format}")
+                return None
         
         except Exception as e:
             self.logger.error(f"Failed to export session: {e}")
