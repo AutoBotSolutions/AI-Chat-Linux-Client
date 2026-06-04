@@ -1870,7 +1870,7 @@ class ChatWindow(QMainWindow):
             
             # Add model info if enabled and available
             if show_model_info and model_info and sender == "AI":
-                base_line += f"\n📊 {model_info}"
+                base_line += f" 📊 {model_info}"
             
             lines.append(base_line)
 
@@ -2266,7 +2266,7 @@ class ChatWindow(QMainWindow):
         
         # Add model info if enabled and available
         if show_model_info and entry['model_info'] and entry['sender'] == "AI":
-            base_line += f"\n📊 {entry['model_info']}"
+            base_line += f" 📊 {entry['model_info']}"
         
         self.chat_display.append(base_line)
         
