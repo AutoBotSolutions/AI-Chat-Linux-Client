@@ -1,0 +1,91 @@
+name: Deploy Site to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'site/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+      with:
+        enablement: true
+
+    - name: Build static site
+      run: |
+        echo "Building site from site/ directory..."
+        
+        # Ensure site directory exists
+        if [ ! -d "site" ]; then
+          echo "Error: site directory not found!"
+          exit 1
+        fi
+        
+        # List site contents
+        echo "Site directory contents:"
+        ls -la site/
+        
+        # Validate HTML files exist
+        if [ ! -f "site/index.html" ]; then
+          echo "Error: index.html not found in site directory!"
+          exit 1
+        fi
+        
+        echo "✓ Site validation passed"
+        
+        # Create build directory
+        mkdir -p _site
+        
+        # Copy all site files to build directory
+        cp -r site/* _site/
+        
+        # Ensure .nojekyll exists
+        touch _site/.nojekyll
+        
+        echo "✓ Site built successfully"
+        echo "Build directory contents:"
+        ls -la _site/
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v4
+      with:
+        path: ./_site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+    - name: Display deployment info
+      run: |
+        echo "🚀 Site deployed successfully!"
+        echo "🌐 Site URL: https://autobotsolutions.github.io/AI-Chat-Linux-Client/"
+        echo "📊 Deployment ID: ${{ steps.deployment.outputs.deployment_id }}"
+        echo "🔗 Page URL: ${{ steps.deployment.outputs.page_url }}"
