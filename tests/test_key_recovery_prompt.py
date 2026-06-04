@@ -20,10 +20,8 @@ def test_prompt_does_nothing_when_status_ok(chat_window):
     chat_window._key_recovery_prompt_shown = False
     chat_window.key_handler.get_key_store_status = lambda: "ok"
 
-    with (
-        patch("ui.main_window.QMessageBox.question") as mock_question,
-        patch.object(chat_window, "show_provider_settings") as mock_show,
-    ):
+    with patch("ui.main_window.QMessageBox.question") as mock_question, \
+         patch.object(chat_window, "show_provider_settings") as mock_show:
         chat_window._prompt_key_store_recovery_if_needed()
 
     mock_question.assert_not_called()
