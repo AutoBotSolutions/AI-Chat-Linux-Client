@@ -5,7 +5,7 @@ Ollama client for local AI model inference.
 import logging
 import aiohttp
 import json
-from typing import Dict, List, Optional, AsyncGenerator
+from typing import Dict, List, Optional, AsyncGenerator, Any
 from .api_client import BaseAPIClient
 
 
