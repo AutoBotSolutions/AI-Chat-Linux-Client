@@ -1518,7 +1518,7 @@ class ChatWindow(QMainWindow):
     def on_generation_complete(self):
         """Called when generation is complete."""
         # Calculate and store performance metrics
-        if hasattr(self, '_generation_start_time') and self._current_generation_model:
+        if hasattr(self, '_generation_start_time') and self._generation_start_time is not None and self._current_generation_model:
             from datetime import datetime
             end_time = datetime.now()
             response_time = (end_time - self._generation_start_time).total_seconds()
@@ -2254,10 +2254,21 @@ class ChatWindow(QMainWindow):
     def add_message(self, sender: str, message: str):
         """Add a message to the chat display."""
         entry = self._append_display_message(sender, message)
-        if self.settings.ui.show_timestamps:
-            self.chat_display.append(f"[{entry['timestamp']}] {entry['sender']}: {entry['message']}")
+        
+        # Build the message line consistently with _render_display_messages
+        show_timestamps = bool(self.settings.ui.show_timestamps)
+        show_model_info = bool(self.settings.ui.show_model_info)
+        
+        if show_timestamps and entry['timestamp']:
+            base_line = f"[{entry['timestamp']}] {entry['sender']}: {entry['message']}"
         else:
-            self.chat_display.append(f"{entry['sender']}: {entry['message']}")
+            base_line = f"{entry['sender']}: {entry['message']}"
+        
+        # Add model info if enabled and available
+        if show_model_info and entry['model_info'] and entry['sender'] == "AI":
+            base_line += f"\n📊 {entry['model_info']}"
+        
+        self.chat_display.append(base_line)
         
         if self.settings.ui.auto_scroll:
             self.chat_display.ensureCursorVisible()
